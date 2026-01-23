@@ -2600,12 +2600,9 @@ html, body { height: 100%; }
                 bgm.play().catch(() => {});
             }
             bgmStarted = true;
-        });
-                bgmStarted = true;
-            }
         }
-        
-        // 最初のクリックでBGM開始
+
+// 最初のクリックでBGM開始
         document.addEventListener('click', startBGM, { once: true });
         document.addEventListener('touchstart', startBGM, { once: true });
         
