@@ -2592,8 +2592,15 @@ html, body { height: 100%; }
         function startBGM() {
             // ユーザー操作のタイミングでAudioContextを起動
             resumeAudio();
-            if (!bgmStarted && bgm) {
-                bgm.play().catch(e => {});
+
+            if (!bgm) return;
+
+            // すでに開始済みでも、import等で止まっていたら必ず再開する
+            if (bgm.paused || bgm.ended) {
+                bgm.play().catch(() => {});
+            }
+            bgmStarted = true;
+        });
                 bgmStarted = true;
             }
         }
@@ -2621,11 +2628,12 @@ html, body { height: 100%; }
         const savedBgmVolume = localStorage.getItem('bgmVolume');
         if (savedBgmVolume !== null) {
             bgmVolumeSlider.value = savedBgmVolume;
-            bgm.volume = savedBgmVolume / 100;
+            // bgm.volume は環境差があるので、実音量はWebAudio(Gain)で制御
+            bgm.volume = 1;
             bgmVolumeText.textContent = savedBgmVolume + '%';
         } else {
             // 初回はデフォルト15%
-            bgm.volume = 0.15;
+            bgm.volume = 1;
             bgmVolumeSlider.value = 15;
             bgmVolumeText.textContent = '15%';
         }
