@@ -2539,10 +2539,59 @@ html, body { height: 100%; }
     <script>
         // BGM制御
         const bgm = document.getElementById('bgm');
+
+        // iOS/Androidで音量スライダーが確実に効くように、WebAudioのGainで制御する
+        // （HTMLAudioElement.volume は環境によって反映されないことがある）
+        let bgmContext = null;
+        let bgmGain = null;
+
+        let seContext = null;
+        let seMasterGain = null;
+
+        function initAudioGraph() {
+            // BGM
+            if (!bgmContext && bgm) {
+                bgmContext = new (window.AudioContext || window.webkitAudioContext)();
+                bgmGain = bgmContext.createGain();
+
+                const saved = localStorage.getItem('bgmVolume');
+                const v = (saved !== null ? parseFloat(saved) : 15) / 100;
+                bgmGain.gain.value = isFinite(v) ? v : 0.15;
+
+                const src = bgmContext.createMediaElementSource(bgm);
+                src.connect(bgmGain);
+                bgmGain.connect(bgmContext.destination);
+
+                // 実際の音量は bgmGain で調整するので、要素側は最大に
+                bgm.volume = 1;
+            }
+
+            // 効果音（BGMと同じContextを使う）
+            if (!seContext) {
+                seContext = bgmContext || new (window.AudioContext || window.webkitAudioContext)();
+                seMasterGain = seContext.createGain();
+
+                const saved = localStorage.getItem('seVolume');
+                const v = (saved !== null ? parseFloat(saved) : 100) / 100;
+                seMasterGain.gain.value = isFinite(v) ? v : 1.0;
+
+                seMasterGain.connect(seContext.destination);
+            }
+        }
+
+        function resumeAudio() {
+            initAudioGraph();
+            [bgmContext, seContext].forEach(ctx => {
+                if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
+            });
+        }
+
         
         // ユーザー操作後にBGM再生を開始
         let bgmStarted = false;
         function startBGM() {
+            // ユーザー操作のタイミングでAudioContextを起動
+            resumeAudio();
             if (!bgmStarted && bgm) {
                 bgm.play().catch(e => {});
                 bgmStarted = true;
@@ -2607,7 +2656,9 @@ html, body { height: 100%; }
         // BGM音量調整
         bgmVolumeSlider.addEventListener('input', (e) => {
             const volume = e.target.value / 100;
-            if (bgm) {
+            if (bgmGain) {
+                bgmGain.gain.value = volume;
+            } else if (bgm) {
                 bgm.volume = volume;
             }
             bgmVolumeText.textContent = e.target.value + '%';
@@ -2616,7 +2667,9 @@ html, body { height: 100%; }
         
         bgmVolumeSlider.addEventListener('change', (e) => {
             const volume = e.target.value / 100;
-            if (bgm) {
+            if (bgmGain) {
+                bgmGain.gain.value = volume;
+            } else if (bgm) {
                 bgm.volume = volume;
             }
             bgmVolumeText.textContent = e.target.value + '%';
@@ -2626,12 +2679,14 @@ html, body { height: 100%; }
         // 効果音音量調整
         seVolumeSlider.addEventListener('input', (e) => {
             seVolume = e.target.value / 100;
+            if (seMasterGain) seMasterGain.gain.value = seVolume;
             seVolumeText.textContent = e.target.value + '%';
             localStorage.setItem('seVolume', e.target.value);
         });
         
         seVolumeSlider.addEventListener('change', (e) => {
             seVolume = e.target.value / 100;
+            if (seMasterGain) seMasterGain.gain.value = seVolume;
             seVolumeText.textContent = e.target.value + '%';
             localStorage.setItem('seVolume', e.target.value);
         });
@@ -2653,8 +2708,18 @@ html, body { height: 100%; }
             try {
                 JSON.parse(data); // データが壊れていないかチェック
                 localStorage.setItem('otofuGameData', data);
-                alert('セーブデータを取り込みました。ページを再読み込みします。');
-                location.reload();
+                alert('セーブデータを取り込みました。反映します。');
+                // 取り込み後はリロードせず、その場で状態を読み込み直してUIを更新（モバイルの自動再生制限でBGMが止まるのを防ぐ）
+                try {
+                    loadGameData();
+                    refreshUIFromState();
+                } catch (e) {
+                    // 万一失敗したら従来どおりリロード
+                    location.reload();
+                }
+                // 音声を確実に再開
+                startBGM();
+
             } catch (e) {
                 alert('セーブデータの形式が正しくありません');
             }
@@ -3851,21 +3916,28 @@ html, body { height: 100%; }
 
         // 効果音
         function playSound(frequency, duration, volume = 0.3) {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
+            // 初回のユーザー操作後に鳴らす前提。念のため再開を試す
+            resumeAudio();
+
+            // seContext / seMasterGain は initAudioGraph() で用意される
+            if (!seContext || !seMasterGain) return;
+
+            const oscillator = seContext.createOscillator();
+            const gainNode = seContext.createGain();
+
             oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
+            gainNode.connect(seMasterGain);
+
             oscillator.frequency.value = frequency;
             oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + duration);
+
+            // 個別音量 * マスター（スライダー） で最終音量
+            const base = Math.max(0.0001, volume);
+            gainNode.gain.setValueAtTime(base, seContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, seContext.currentTime + duration);
+
+            oscillator.start(seContext.currentTime);
+            oscillator.stop(seContext.currentTime + duration);
         }
         
         function playStarSound() {
@@ -5186,11 +5258,41 @@ html, body { height: 100%; }
             }
         });
         
-        // 初期化
+        
+        // セーブ読込後やセーブ引き継ぎ後に、現在の状態を画面へ反映する
+        function refreshUIFromState() {
+            try {
+                if (typeof usernameText !== 'undefined' && usernameText) {
+                    usernameText.textContent = username || '名前を入力';
+                }
+                if (typeof character !== 'undefined' && character) {
+                    character.textContent = currentCharacter || '🌚';
+                }
+
+                if (currentBackground) {
+                    document.body.className = currentBackground + '-bg';
+                    generateBackgroundEffect(currentBackground);
+                }
+
+                if (typeof updateStarCounter === 'function') updateStarCounter();
+                if (typeof updateRankDisplay === 'function') updateRankDisplay();
+                if (typeof updateActionMessage === 'function') updateActionMessage();
+                if (typeof updateDiamondCounter === 'function') updateDiamondCounter();
+                if (typeof updateMissionList === 'function') updateMissionList();
+                if (typeof updateRewardItems === 'function') updateRewardItems();
+                if (typeof updateGachaPullButton === 'function') updateGachaPullButton();
+                if (typeof updateButtonStates === 'function') updateButtonStates();
+                if (typeof updateClosetItems === 'function') updateClosetItems();
+                if (typeof renderPlaceableDecor === 'function') renderPlaceableDecor();
+                if (typeof updateExistingStars === 'function') updateExistingStars();
+            } catch (e) {
+                console.warn('refreshUIFromState failed', e);
+            }
+        }
+
+// 初期化
         loadGameData();
-        updateStarCounter();
-        updateRankDisplay();
-        updateActionMessage();
+        refreshUIFromState();
         
         // シリアルコード機能（初期化後に設定）
         const serialInput = document.getElementById('serial-input');
