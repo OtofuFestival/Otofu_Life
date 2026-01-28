@@ -5027,29 +5027,11 @@ function safePlay(audioEl){
 const safeStorage = (() => {
   try {
     const k = '__otofu_test__';
-
-        // 保存済みBGMトラックを適用
-        const savedTrack = safeStorage.getItem('bgmTrack');
-        if (savedTrack && (savedTrack in bgmTracks)) {
-            currentBgmTrack = savedTrack;
-            const bgmEl = document.getElementById('bgm');
-            const srcEl = bgmEl ? bgmEl.querySelector('source') : null;
-            if (bgmEl && srcEl) {
-                if (currentBgmTrack === 'off') {
-                    bgmEl.pause();
-                    bgmEl.currentTime = 0;
-                } else {
-                    srcEl.src = bgmTracks[currentBgmTrack];
-                    bgmEl.load();
-                }
-            }
-        }
-        updateBgmSelectUI();
-    window.safeStorage.setItem(k, '1');
-    window.safeStorage.removeItem(k);
-    return window.safeStorage;
+    window.localStorage.setItem(k, '1');
+    window.localStorage.removeItem(k);
+    return window.localStorage;
   } catch (e) {
-    // file:// やプライベート設定で safeStorage が死ぬ環境向け
+    // file:// やプライベート設定で localStorage が使えない環境向け
     const mem = {};
     return {
       getItem: (key) => (key in mem ? mem[key] : null),
@@ -5141,6 +5123,12 @@ const safeStorage = (() => {
             off: null
         };
         let currentBgmTrack = 'default';
+
+        // 保存済みBGMトラックを適用
+        const savedTrack = safeStorage.getItem('bgmTrack');
+        if (savedTrack && (savedTrack in bgmTracks)) {
+            currentBgmTrack = savedTrack;
+        }
 
         function setBgmTrack(key){
             currentBgmTrack = key;
@@ -6751,7 +6739,6 @@ function spawnFloatingCircles(opts) {
                     titleProgress = data.titleProgress || { pixivCount: 0, talkCount: 0, shopPurchaseCount: 0, totalDiamonds: 0, totalStars: 0 };
                 } catch (e) {
                     // デコード失敗時は初期化
-                    console.error('セーブデータの読み込みに失敗:', e);
                     initializeDefaultData();
                 }
             } else {
