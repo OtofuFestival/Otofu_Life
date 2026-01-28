@@ -4447,7 +4447,7 @@ body.wine-bg{ background-color:#14040c !important; }
             border-radius:14px;
             padding:8px;
             display:none;
-            z-index: 9999;
+            z-index: 500; /* below modals */
             backdrop-filter: blur(10px);
         }
         .bgm-list.open{ display:block; }
@@ -4565,9 +4565,19 @@ html, body {
   bottom: 0;
   margin-top: auto;
   padding-bottom: env(safe-area-inset-bottom);
-  z-index: 9999;
+  z-index: 500; /* below modals */
 }
 
+
+/* Ensure modals are always above the bottom UI (Safari/Chrome iOS stacking quirks) */
+#mission-modal,
+#shop-modal,
+#closet-modal,
+#gacha-modal,
+#serial-modal,
+.modal {
+  z-index: 20000 !important;
+}
 /* Top UI notch safety (if present) */
 #top-ui, .top-ui {
   padding-top: env(safe-area-inset-top);
