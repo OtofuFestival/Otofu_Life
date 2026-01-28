@@ -18,14 +18,14 @@
         
         html, body {
             width: 100%;
-            height: 100%;
+            height: 100dvh;
+            min-height: 100dvh;
             margin: 0;
             padding: 0;
         }
 
         body {
             font-family: 'M PLUS Rounded 1c', sans-serif;
-            min-height: 100%;
             overflow: hidden;
             position: relative;
             transition: background 1s ease;
@@ -50,7 +50,6 @@
             align-items: center;
             justify-content: center;
             background: transparent;
-            padding-bottom: env(safe-area-inset-bottom, 0px);
             box-sizing: border-box;
         }
 
@@ -1444,7 +1443,8 @@
         
         #character-area {
             position: relative;
-            height: 50vh;
+            height: 45vh;
+            max-height: calc(100vh - 350px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1770,17 +1770,19 @@
         }
         
         #interaction-area {
-            position: absolute;
+            position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             width: 100%;
             padding: 20px;
-            padding-bottom: 100px;
+            padding-bottom: 20px;
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             box-sizing: border-box;
             z-index: 100;
+            max-height: 40vh;
+            overflow-y: auto;
         }
         
         /* スキルアップシステム */
