@@ -1774,21 +1774,22 @@
         
         #interaction-area {
             position: fixed;
-            bottom: 80px;
+            bottom: 0;
             left: 0;
             right: 0;
             width: 100%;
             padding: 20px;
-            padding-bottom: 20px;
+            padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             box-sizing: border-box;
-            z-index: 100;
+            z-index: 500;
+            transform: translateY(0);
         }
         
         @media (max-width: 768px) {
             #interaction-area {
-                bottom: 100px;
+                transform: translateY(-100px);
             }
         }
         
@@ -10674,6 +10675,43 @@ generateBackgroundEffect(currentBackground);
     });
 
     apply();
+})();
+
+// スマホブラウザUIに対応した位置調整
+(function() {
+    const interactionArea = document.getElementById('interaction-area');
+    if (!interactionArea) return;
+    
+    function adjustPosition() {
+        // 実際のビューポート高さを取得
+        const vh = window.innerHeight;
+        const vw = window.innerWidth;
+        
+        // スマホの場合のみ調整
+        if (vw <= 768) {
+            // ビューポート高さの12%を下部余白として確保
+            const offset = Math.max(100, vh * 0.12);
+            interactionArea.style.transform = `translateY(-${offset}px)`;
+        } else {
+            // PCの場合は余白なし
+            interactionArea.style.transform = 'translateY(0)';
+        }
+    }
+    
+    // 初期調整
+    adjustPosition();
+    
+    // リサイズ時に再調整
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(adjustPosition, 100);
+    });
+    
+    // オリエンテーション変更時にも再調整
+    window.addEventListener('orientationchange', () => {
+        setTimeout(adjustPosition, 300);
+    });
 })();
 </script>
 
