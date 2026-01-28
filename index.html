@@ -3342,7 +3342,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.9);
-            z-index: 30000;
+            z-index: 200;
             justify-content: center;
             align-items: center;
         }
@@ -4534,82 +4534,6 @@ body.wine-bg{ background-color:#14040c !important; }
 }
 
 
-/* === iOS Safari/Chrome stable layout: scroll + sticky (override) === */
-html, body {
-  height: 100%;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  -webkit-overflow-scrolling: touch;
-}
-
-#viewport {
-  /* Avoid fixed/vh-based layouts that jitter with URL/tab bars */
-  min-height: 100svh;
-  min-height: 100dvh;
-  height: auto !important;
-  max-height: none !important;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-#game-container {
-  flex: 1 1 auto;
-  min-height: 0; /* allow flex child to shrink without pushing sticky bar offscreen */
-}
-
-#interaction-area {
-  position: sticky !important;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin-top: auto;
-  padding-bottom: env(safe-area-inset-bottom);
-  z-index: 500; /* below modals */
-}
-
-
-/* モーダルのz-index統一（すべて個別に設定済み） */
-#confirm-modal {
-  z-index: 30000 !important; /* 購入確認は最前面 */
-}
-
-/* Top UI notch safety (if present) */
-#top-ui, .top-ui {
-  padding-top: env(safe-area-inset-top);
-}
-
-
-/* === Extra fixes === */
-/* Keep background from moving when the page scrolls (e.g., when tapping the ▲ button) */
-#stars{
-  position: fixed !important;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-}
-/* Make sure the actual game UI stays above the fixed background */
-#top-ui, #interaction-area, .modal, #mission-modal, #shop-modal, #closet-modal, #gacha-modal, #save-modal, #settings-modal{
-  position: relative;
-  z-index: 10;
-}
-
-/* Desktop tuning: avoid vw-driven UI looking oversized inside the 9:16 frame */
-@media (min-width: 768px){
-  #username-display,
-  #rank-box{
-    font-size: 20px !important;
-    padding: 10px 18px !important;
-    max-width: 320px !important;
-  }
-  #title-display{
-    font-size: 16px !important;
-    padding: 8px 14px !important;
-  }
-}
 
 </style>
 
@@ -10744,6 +10668,7 @@ generateBackgroundEffect(currentBackground);
 
     btn.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         open = !open;
         apply();
     });
