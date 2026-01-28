@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>おと〜ふ一生</title>
+    <!-- LZString圧縮ライブラリ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
         
-        * {
+        
+        :root { --vh: 1vh; }
+* {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -16,39 +20,52 @@
         
         html, body {
             width: 100%;
-            height: 100%;
+            height: 100vh;
+            height: 100dvh;
+            min-height: 100vh;
+            min-height: 100dvh;
             margin: 0;
             padding: 0;
+                    height: calc(var(--vh, 1vh) * 100);
         }
 
-        body {
+
+body {
             font-family: 'M PLUS Rounded 1c', sans-serif;
-            min-height: 100%;
             overflow: hidden;
             position: relative;
             transition: background 1s ease;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
 
         /* Portrait-safe viewport wrapper (prevents sideways layout on Android fullscreen) */
         #viewport {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             width: 100%;
-            height: var(--app-height, 100dvh);
+            height: 100vh;
+            height: 100dvh;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Let the body's background (night-bg / day-bg etc.) show through.
-               Using a solid color here can make the background look "black" on some devices. */
             background: transparent;
+            box-sizing: border-box;
+                    height: calc(var(--vh, 1vh) * 100);
         }
-
-        #app {
+#app {
             width: 100%;
             height: 100%;
             transform-origin: center center;
             will-change: transform, width, height;
+            box-sizing: border-box;
         }
 
         
@@ -475,6 +492,79 @@
                     #01050c 70%,
                     #010308 80%,
                     #000204 90%,
+                    #000000 100%);
+            background-size: 100% 100%;
+        }
+        
+        /* 回転する星空背景（Rank 100） */
+        body.cosmos-bg {
+            background: 
+                radial-gradient(ellipse at 30% 30%, rgba(75, 0, 130, 0.4) 0%, transparent 40%),
+                radial-gradient(circle at 70% 60%, rgba(25, 25, 112, 0.3) 0%, transparent 50%),
+                linear-gradient(180deg,
+                    #000428 0%,
+                    #001845 20%,
+                    #003366 40%,
+                    #004d88 60%,
+                    #0066aa 80%,
+                    #0080cc 100%);
+            background-size: 100% 100%;
+        }
+        
+        /* 幾何学模様背景（Rank 200） */
+        body.matrix-bg {
+            background:
+                linear-gradient(45deg, transparent 48%, rgba(100, 200, 255, 0.1) 49%, rgba(100, 200, 255, 0.1) 51%, transparent 52%),
+                linear-gradient(-45deg, transparent 48%, rgba(100, 200, 255, 0.1) 49%, rgba(100, 200, 255, 0.1) 51%, transparent 52%),
+                linear-gradient(180deg,
+                    #0a0a1f 0%,
+                    #0f0f2d 20%,
+                    #14143b 40%,
+                    #191949 60%,
+                    #1e1e57 80%,
+                    #232365 100%);
+            background-size: 40px 40px, 40px 40px, 100% 100%;
+            background-position: 0 0, 0 0, 0 0;
+        }
+        
+        /* 波紋背景（Rank 300） */
+        body.aqua-bg {
+            background:
+                radial-gradient(circle at 50% 50%, rgba(135, 206, 250, 0.2) 0%, transparent 30%),
+                radial-gradient(circle at 30% 70%, rgba(100, 149, 237, 0.15) 0%, transparent 35%),
+                radial-gradient(circle at 70% 30%, rgba(176, 224, 230, 0.15) 0%, transparent 35%),
+                linear-gradient(180deg,
+                    #001f3f 0%,
+                    #003057 20%,
+                    #00416f 40%,
+                    #005287 60%,
+                    #00639f 80%,
+                    #0074b7 100%);
+            background-size: 100% 100%;
+        }
+        
+        /* メトロポリス背景（Rank 400）- スクロールする街並み */
+        body.metro-bg {
+            background:
+                linear-gradient(180deg,
+                    #0a0e1a 0%,
+                    #1a1f35 20%,
+                    #2a2f45 40%,
+                    #1f2438 60%,
+                    #14182a 80%,
+                    #0a0e1a 100%);
+            background-size: 100% 100%;
+        }
+        
+        /* ハッカー背景（Rank 500）- サイバースペース */
+        body.hacker-bg {
+            background:
+                linear-gradient(180deg,
+                    #000000 0%,
+                    #001100 20%,
+                    #002200 40%,
+                    #001100 60%,
+                    #000000 80%,
                     #000000 100%);
             background-size: 100% 100%;
         }
@@ -1020,10 +1110,146 @@
             }
         }
         
+        /* 回転する星空エフェクト */
+        .rotating-star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+            animation: rotateStar 30s linear infinite;
+        }
+        
+        @keyframes rotateStar {
+            0% {
+                transform: rotate(0deg) translateX(var(--radius)) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: rotate(360deg) translateX(var(--radius)) rotate(-360deg);
+                opacity: 0.3;
+            }
+        }
+        
+        /* 幾何学模様エフェクト */
+        .geo-shape {
+            position: absolute;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            animation: geoFloat 15s ease-in-out infinite;
+        }
+        
+        @keyframes geoFloat {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0.4;
+            }
+            25% {
+                transform: translate(30px, -30px) rotate(90deg);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translate(0, -60px) rotate(180deg);
+                opacity: 0.4;
+            }
+            75% {
+                transform: translate(-30px, -30px) rotate(270deg);
+                opacity: 0.7;
+            }
+        }
+        
+        /* 波紋エフェクト */
+        .ripple {
+            position: absolute;
+            border: 2px solid rgba(135, 206, 250, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: rippleExpand 1.5s ease-out forwards;
+        }
+        
+        @keyframes rippleExpand {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            100% {
+                width: 300px;
+                height: 300px;
+                opacity: 0;
+            }
+        }
+        
+        /* スクロールする街並みエフェクト */
+        .city-building {
+            position: absolute;
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .city-building.scroll-1 {
+            animation: cityScroll1 30s linear infinite;
+        }
+        
+        .city-building.scroll-2 {
+            animation: cityScroll2 30s linear infinite;
+        }
+        
+        @keyframes cityScroll1 {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-200vw);
+            }
+        }
+        
+        @keyframes cityScroll2 {
+            0% {
+                transform: translateX(100vw);
+            }
+            100% {
+                transform: translateX(-100vw);
+            }
+        }
+        
+        /* サイバースペースのコード文字 */
+        .cyber-code {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+            opacity: 0.8;
+            white-space: nowrap;
+            animation: codeRain 8s linear infinite;
+        }
+        
+        @keyframes codeRain {
+            0% {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+            }
+            90% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+        
         /* ========== Top HUD ========== */
         #top-ui {
             position: absolute;
-            top: calc(20px + env(safe-area-inset-top));
+            top: 60px;
             left: 20px;
             right: 20px;
             display: flex;
@@ -1035,13 +1261,49 @@
         }
 
         #hud-right {
+            position: fixed;
+            top: 20px;
+            right: 20px;
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 10px;
             pointer-events: none;
+            z-index: 20;
         }
 
+        #title-display {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #FFD700;
+            font-size: clamp(14px, 3.5vw, 20px);
+            font-weight: 700;
+            background: rgba(0, 0, 0, 0.7);
+            padding: clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            z-index: 25;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            cursor: pointer;
+            max-width: 48vw;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: all 0.3s;
+        }
+        
+        #title-display:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+        }
+        
+        #title-text {
+            cursor: pointer;
+        }
+        
         #username-display {
             position: relative;
             color: #FFD700;
@@ -1086,7 +1348,7 @@
         
         #settings-btn {
             position: fixed;
-            top: 80px;
+            top: 110px;
             left: 20px;
             background: transparent;
             border: none;
@@ -1188,7 +1450,8 @@
         
         #character-area {
             position: relative;
-            height: 50vh;
+            height: 45vh;
+            max-height: calc(100vh - 350px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1201,6 +1464,8 @@
             cursor: pointer;
             transition: transform 0.1s ease;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
             filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.3));
             animation: float 3s ease-in-out infinite;
             z-index: 5;
@@ -1225,6 +1490,8 @@
             font-size: 40px;
             cursor: pointer;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
             /* 飾りより必ず上に出す */
             z-index: 100;
             animation: starFloat 2s ease-in-out infinite;
@@ -1460,7 +1727,7 @@
         
         #speech-bubble {
             position: absolute;
-            top: 68%;
+            top: 90%;
             bottom: auto;
 
             left: 50%;
@@ -1479,6 +1746,11 @@
             text-align: center;
             white-space: normal;
             overflow-wrap: anywhere;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
         
         #speech-bubble::before {
@@ -1505,13 +1777,23 @@
         }
         
         #interaction-area {
-            position: absolute;
-            bottom: 0;
+            position: fixed;
+            bottom: 80px;
+            left: 0;
+            right: 0;
             width: 100%;
             padding: 20px;
-            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            padding-bottom: 20px;
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
+            box-sizing: border-box;
+            z-index: 100;
+        }
+        
+        @media (max-width: 768px) {
+            #interaction-area {
+                bottom: 100px;
+            }
         }
         
         /* スキルアップシステム */
@@ -1873,6 +2155,314 @@
         #close-modal-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        /* 放置報酬モーダル */
+        #idle-reward-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #idle-reward-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.3);
+            border: 2px solid #FFD700;
+        }
+        
+        #idle-reward-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        #idle-reward-message {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        
+        #idle-time-display {
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        #idle-reward-amount {
+            font-size: 40px;
+            color: #FFD700;
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+        }
+        
+        #claim-idle-reward-btn {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 15px 50px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+            width: auto;
+            display: inline-block;
+            margin: 0 auto;
+        }
+        
+        #claim-idle-reward-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+        }
+        
+        #claim-idle-reward-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* 称号モーダル */
+        #title-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #title-modal-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.3);
+            border: 2px solid #FFD700;
+        }
+        
+        #title-modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        #title-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .title-item {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .title-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .title-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .title-item.locked:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .title-item.equipped {
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+        
+        .title-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .title-condition {
+            font-size: 12px;
+            color: #ccc;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        
+        .title-status {
+            font-size: 11px;
+            text-align: center;
+            color: #FFD700;
+        }
+        
+        #close-title-modal-btn {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        #close-title-modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* 枠色クラス */
+        .border-yellow { border-color: #FFD700 !important; box-shadow: 0 0 30px rgba(255, 215, 0, 0.6) !important; }
+        .border-pink { border-color: #FFB3D9 !important; box-shadow: 0 0 30px rgba(255, 179, 217, 0.6) !important; }
+        .border-green { border-color: #90EE90 !important; box-shadow: 0 0 30px rgba(144, 238, 144, 0.6) !important; }
+        .border-blue { border-color: #4169E1 !important; box-shadow: 0 0 30px rgba(65, 105, 225, 0.6) !important; }
+        .border-purple { border-color: #9370DB !important; box-shadow: 0 0 30px rgba(147, 112, 219, 0.6) !important; }
+        .border-gold { border-color: #FFD700 !important; box-shadow: 0 0 40px rgba(255, 215, 0, 0.8) !important; }
+        .border-rainbow {
+            border: 2px solid;
+            border-image: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3) 1;
+            animation: rainbow-glow 3s linear infinite;
+        }
+        
+        @keyframes rainbow-glow {
+            0%, 100% { box-shadow: 0 0 30px rgba(255, 0, 0, 0.6); }
+            14% { box-shadow: 0 0 30px rgba(255, 127, 0, 0.6); }
+            28% { box-shadow: 0 0 30px rgba(255, 255, 0, 0.6); }
+            42% { box-shadow: 0 0 30px rgba(0, 255, 0, 0.6); }
+            57% { box-shadow: 0 0 30px rgba(0, 0, 255, 0.6); }
+            71% { box-shadow: 0 0 30px rgba(75, 0, 130, 0.6); }
+            85% { box-shadow: 0 0 30px rgba(148, 0, 211, 0.6); }
+        }
+        
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        
+        #title-modal-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.3);
+            border: 2px solid #FFD700;
+        }
+        
+        #title-modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        #title-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .title-item {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .title-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .title-item.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .title-item.equipped {
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+        
+        .title-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .title-condition {
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        .title-progress {
+            font-size: 12px;
+            color: #FFD700;
+            margin-top: 5px;
+        }
+        
+        #close-title-modal-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        #close-title-modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
         }
         
         /* ガチャモーダル */
@@ -2378,7 +2968,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            z-index: 100;
+            z-index: 200;
             justify-content: center;
             align-items: center;
         }
@@ -3254,8 +3844,6 @@ body.money-bg{
 
 
 :root{
-  --app-height: 100dvh;
-
   --money-bg:
     radial-gradient(120% 90% at 14% 16%, rgba(255,230,165,0.60), transparent 46%),
     radial-gradient(100% 80% at 88% 30%, rgba(255,205,120,0.52), transparent 52%),
@@ -3951,6 +4539,25 @@ body.wine-bg{ background-color:#14040c !important; }
 
 </style>
 
+<script>(function () {
+  function setVh() {
+    var h = window.innerHeight;
+    if (window.visualViewport && window.visualViewport.height) {
+      // visualViewport is more accurate on iOS Safari/Chrome when toolbars expand/collapse
+      h = window.visualViewport.height;
+    }
+    document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+  }
+  setVh();
+  window.addEventListener('resize', setVh);
+  window.addEventListener('orientationchange', setVh);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setVh);
+    window.visualViewport.addEventListener('scroll', setVh);
+  }
+})();</script>
+
+
 </head>
 <body class="night-bg">
     <div id="viewport"><div id="app">
@@ -3959,6 +4566,14 @@ body.wine-bg{ background-color:#14040c !important; }
         <div id="stars"></div>
         
         <button id="settings-btn">⚙️</button>
+        
+        <!-- デバッグボタン（一時的） -->
+        <button id="debug-idle-btn" style="position: fixed; top: 60px; right: 10px; z-index: 100; padding: 10px; background: #FF6B6B; color: white; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.3); display: none;">デバッグ: 放置報酬</button>
+        
+        <!-- 称号表示 -->
+        <div id="title-display">
+            <span id="title-text">新星</span>
+        </div>
         
         <div id="top-ui">
             <div id="username-display">
@@ -3984,39 +4599,63 @@ body.wine-bg{ background-color:#14040c !important; }
         <!-- 飾りエリア -->
         <div id="placement-area"></div>
         
-        <div id="interaction-area">
-            <!-- スキルアップシステム -->
-            
-            <div id="skill-panel">
+        </div>
+    </div>
+    
+    <!-- インタラクションエリア（game-containerの外に配置） -->
+    <div id="interaction-area">
+        <!-- スキルアップシステム -->
+        
+        <div id="skill-panel">
 <div id="skill-system">
-                                <div class="skill-buttons">
-                    <button class="skill-button" id="skill-diamond-btn">
-                        <div class="skill-name">💎スキル</div>
-                        <div class="skill-level">Lv.<span id="skill-diamond-level">0</span>/5</div>
-                    </button>
-                    <button class="skill-button" id="skill-speed-btn">
-                        <div class="skill-name">⭐️スキル</div>
-                        <div class="skill-level">Lv.<span id="skill-speed-level">0</span>/5</div>
-                    </button>
-                    <button class="skill-button" id="skill-bonus-btn">
-                        <div class="skill-name">🎁スキル</div>
-                        <div class="skill-level">Lv.<span id="skill-bonus-level">0</span>/5</div>
-                    </button>
-                </div>
+                            <div class="skill-buttons">
+                <button class="skill-button" id="skill-diamond-btn">
+                    <div class="skill-name">💎スキル</div>
+                    <div class="skill-level">Lv.<span id="skill-diamond-level">0</span>/5</div>
+                </button>
+                <button class="skill-button" id="skill-speed-btn">
+                    <div class="skill-name">⭐️スキル</div>
+                    <div class="skill-level">Lv.<span id="skill-speed-level">0</span>/5</div>
+                </button>
+                <button class="skill-button" id="skill-bonus-btn">
+                    <div class="skill-name">🎁スキル</div>
+                    <div class="skill-level">Lv.<span id="skill-bonus-level">0</span>/5</div>
+                </button>
             </div>
-            </div>
+        </div>
+        </div>
 
-            <div id="skill-toggle-wrap">
-                <button id="skill-toggle-btn" aria-label="スキルパネルを開閉" title="スキル">🔼</button>
+        <div id="skill-toggle-wrap">
+            <button id="skill-toggle-btn" aria-label="スキルパネルを開閉" title="スキル">🔼</button>
+        </div>
+        <div id="button-grid">
+            <button class="action-button" id="pixiv-btn">pixiv⭐️3</button>
+            <button class="action-button mini" id="collect-all-btn">⭐️</button>
+            <button class="action-button" id="mission-btn">ミッション</button>
+            <button class="action-button" id="gacha-btn">ガチャ</button>
+            <button class="action-button" id="shop-btn">ショップ</button>
+            <button class="action-button" id="closet-btn">着せ替え</button>
+        </div>
+    </div>
+    
+    <!-- 放置報酬モーダル -->
+    <div id="idle-reward-modal" style="display: none;">
+        <div id="idle-reward-content">
+            <div id="idle-reward-title">🎁 放置報酬</div>
+            <div id="idle-reward-message">
+                <div id="idle-time-display"></div>
+                <div id="idle-reward-amount"></div>
             </div>
-            <div id="button-grid">
-                <button class="action-button" id="pixiv-btn">pixiv⭐️3</button>
-                <button class="action-button mini" id="collect-all-btn">⭐️</button>
-                <button class="action-button" id="mission-btn">ミッション</button>
-                <button class="action-button" id="gacha-btn">ガチャ</button>
-                <button class="action-button" id="shop-btn">ショップ</button>
-                <button class="action-button" id="closet-btn">着せ替え</button>
-            </div>
+            <button id="claim-idle-reward-btn" class="action-button">受け取る</button>
+        </div>
+    </div>
+    
+    <!-- 称号モーダル -->
+    <div id="title-modal" style="display: none;">
+        <div id="title-modal-content">
+            <div id="title-modal-title">🏆 称号</div>
+            <div id="title-list"></div>
+            <button id="close-title-modal-btn" class="action-button">閉じる</button>
         </div>
     </div>
     
@@ -4130,6 +4769,31 @@ body.wine-bg{ background-color:#14040c !important; }
                         <div class="reward-name">虹</div>
                         <div class="reward-locked">Rank 20で解禁</div>
                     </div>
+                    <div class="reward-item locked" data-type="background" data-value="cosmos" data-rank="100">
+                        <div class="reward-icon">💫</div>
+                        <div class="reward-name">コスモ</div>
+                        <div class="reward-locked">Rank 100で解禁</div>
+                    </div>
+                    <div class="reward-item locked" data-type="background" data-value="matrix" data-rank="200">
+                        <div class="reward-icon">🔷</div>
+                        <div class="reward-name">マトリックス</div>
+                        <div class="reward-locked">Rank 200で解禁</div>
+                    </div>
+                    <div class="reward-item locked" data-type="background" data-value="aqua" data-rank="300">
+                        <div class="reward-icon">💧</div>
+                        <div class="reward-name">アクア</div>
+                        <div class="reward-locked">Rank 300で解禁</div>
+                    </div>
+                    <div class="reward-item locked" data-type="background" data-value="metro" data-rank="400">
+                        <div class="reward-icon">🏙️</div>
+                        <div class="reward-name">メトロポリス</div>
+                        <div class="reward-locked">Rank 400で解禁</div>
+                    </div>
+                    <div class="reward-item locked" data-type="background" data-value="hacker" data-rank="500">
+                        <div class="reward-icon">💻</div>
+                        <div class="reward-name">ハッカー</div>
+                        <div class="reward-locked">Rank 500で解禁</div>
+                    </div>
                 </div>
             </div>
             
@@ -4140,7 +4804,10 @@ body.wine-bg{ background-color:#14040c !important; }
     <!-- ミッションモーダル -->
     <div id="mission-modal">
         <div id="mission-modal-content">
-            <div id="mission-modal-title">ミッション</div>
+            <div id="mission-modal-title">
+                ミッション
+                <button id="claim-all-missions-btn" style="float: right; font-size: 14px; padding: 5px 12px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 8px; cursor: pointer; margin-left: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-weight: bold;">一括</button>
+            </div>
             <div id="mission-list"></div>
             <button id="close-mission-btn">閉じる</button>
         </div>
@@ -4404,29 +5071,11 @@ function safePlay(audioEl){
 const safeStorage = (() => {
   try {
     const k = '__otofu_test__';
-
-        // 保存済みBGMトラックを適用
-        const savedTrack = safeStorage.getItem('bgmTrack');
-        if (savedTrack && (savedTrack in bgmTracks)) {
-            currentBgmTrack = savedTrack;
-            const bgmEl = document.getElementById('bgm');
-            const srcEl = bgmEl ? bgmEl.querySelector('source') : null;
-            if (bgmEl && srcEl) {
-                if (currentBgmTrack === 'off') {
-                    bgmEl.pause();
-                    bgmEl.currentTime = 0;
-                } else {
-                    srcEl.src = bgmTracks[currentBgmTrack];
-                    bgmEl.load();
-                }
-            }
-        }
-        updateBgmSelectUI();
-    window.safeStorage.setItem(k, '1');
-    window.safeStorage.removeItem(k);
-    return window.safeStorage;
+    window.localStorage.setItem(k, '1');
+    window.localStorage.removeItem(k);
+    return window.localStorage;
   } catch (e) {
-    // file:// やプライベート設定で safeStorage が死ぬ環境向け
+    // file:// やプライベート設定で localStorage が使えない環境向け
     const mem = {};
     return {
       getItem: (key) => (key in mem ? mem[key] : null),
@@ -4518,6 +5167,12 @@ const safeStorage = (() => {
             off: null
         };
         let currentBgmTrack = 'default';
+
+        // 保存済みBGMトラックを適用
+        const savedTrack = safeStorage.getItem('bgmTrack');
+        if (savedTrack && (savedTrack in bgmTracks)) {
+            currentBgmTrack = savedTrack;
+        }
 
         function setBgmTrack(key){
             currentBgmTrack = key;
@@ -4631,16 +5286,19 @@ const safeStorage = (() => {
         // 設定モーダルを開く
         settingsBtn.addEventListener('click', () => {
             settingsModal.classList.add('show');
+            settingsBtn.style.display = 'none';
         });
         
         // 設定モーダルを閉じる
         closeSettingsBtn.addEventListener('click', () => {
             settingsModal.classList.remove('show');
+            settingsBtn.style.display = 'flex';
         });
         
         settingsModal.addEventListener('click', (e) => {
             if (e.target === settingsModal) {
                 settingsModal.classList.remove('show');
+                settingsBtn.style.display = 'flex';
             }
         });
         
@@ -4693,26 +5351,48 @@ const safeStorage = (() => {
         importSaveBtn.addEventListener('click', () => {
             const data = saveTextarea.value.trim();
             if (!data) {
-                alert('セーブデータを入力してください');
+                settingsModal.classList.remove('show');
+                settingsBtn.style.display = 'flex';
+                showDialogue('セーブデータを入力してください', true);
                 return;
             }
             try {
-                JSON.parse(data); // データが壊れていないかチェック
-                safeStorage.setItem('otofuGameData', data);
-                alert('セーブデータを取り込みました。反映します。');
-                // 取り込み後はリロードせず、その場で状態を読み込み直してUIを更新（モバイルの自動再生制限でBGMが止まるのを防ぐ）
+                // 新形式（3, V2_, V1_で始まる）か旧形式（JSONそのまま）かをチェック
+                if (data.startsWith(SAVE_VERSION) || data.startsWith(SAVE_VERSION_V2) || data.startsWith(SAVE_VERSION_V1)) {
+                    // 新形式：そのまま保存して読み込み
+                    safeStorage.setItem('otofuGameData', data);
+                } else {
+                    // 旧形式：JSON検証してから保存
+                    const parsedData = JSON.parse(data);
+                    
+                    if (typeof parsedData !== 'object' || parsedData === null) {
+                        throw new Error('無効なデータ');
+                    }
+                    
+                    safeStorage.setItem('otofuGameData', data);
+                }
+                
                 try {
                     loadGameData();
                     refreshUIFromState();
                 } catch (e) {
-                    // 万一失敗したら従来どおりリロード
-                    location.reload();
+                    settingsModal.classList.remove('show');
+                    settingsBtn.style.display = 'flex';
+                    showDialogue('セーブデータの取り込みに失敗しました', true);
+                    return;
                 }
-                // 音声を確実に再開
+                
                 startBGM();
+                
+                settingsModal.classList.remove('show');
+                settingsBtn.style.display = 'flex';
+                
+                showDialogue('セーブデータを取り込みました！', true);
 
             } catch (e) {
-                alert('セーブデータの形式が正しくありません');
+                settingsModal.classList.remove('show');
+                settingsBtn.style.display = 'flex';
+                showDialogue('セーブデータの取り込みに失敗しました', true);
             }
         });
         
@@ -4742,6 +5422,42 @@ let bonusMoonActive = false;
         let skillBonusLevel = 0;   // ボーナス出現確率UP (MAX 5, 1.5倍まで)
         const maxSkillLevel = 5;
         
+        // 放置報酬システム
+        let lastPlayTime = Date.now();
+        let idleRewardClaimed = true; // 報酬を受け取ったかどうか
+        
+        // 称号システム
+        let currentTitle = 'newcomer';
+        let unlockedTitles = ['newcomer'];
+        let titleProgress = {
+            pixivCount: 0,
+            talkCount: 0,
+            shopPurchaseCount: 0,
+            totalDiamonds: 0,
+            totalStars: 0
+        };
+        
+        const titles = {
+            newcomer: { name: '新星', color: '#FFD700', condition: 'デフォルト', requirement: null },
+            pervert1: { name: 'スケベ', color: '#FFB3D9', condition: 'pixivを500回見せる', requirement: { type: 'pixiv', count: 500 } },
+            pervert2: { name: '変態', color: 'rainbow', condition: 'pixivを1000回見せる', requirement: { type: 'pixiv', count: 1000 } },
+            pervert3: { name: 'おじさん', color: 'gradient-white', condition: 'pixivを2000回見せる', requirement: { type: 'pixiv', count: 2000 } },
+            friend: { name: 'おと〜ふの友人', color: '#90EE90', condition: '2000回話しかける', requirement: { type: 'talk', count: 2000 } },
+            caretaker: { name: 'おと〜ふの介護士', color: '#90EE90', condition: '3000回話しかける', requirement: { type: 'talk', count: 3000 } },
+            stalker: { name: 'ストーカー', color: 'rainbow', condition: '5000回話しかける', requirement: { type: 'talk', count: 5000 } },
+            bestfriend: { name: 'おと〜ふの親友', color: 'gradient-white', condition: '10000回話しかける', requirement: { type: 'talk', count: 10000 } },
+            lazy: { name: '暇人', color: '#90EE90', condition: 'ランク200到達', requirement: { type: 'rank', count: 200 } },
+            neet: { name: 'ニート', color: 'rainbow', condition: 'ランク300到達', requirement: { type: 'rank', count: 300 } },
+            serious: { name: 'ガチ勢', color: 'gradient-white', condition: 'ランク400到達', requirement: { type: 'rank', count: 400 } },
+            sun: { name: '太陽', color: 'gradient-white', condition: 'ランク500到達', requirement: { type: 'rank', count: 500 } },
+            nolife: { name: '廃人', color: 'rainbow', condition: 'スキルを全てLv5', requirement: { type: 'skillMax', count: 1 } },
+            rich: { name: '石油王', color: '#FFD700', condition: 'ショップで10回購入', requirement: { type: 'shop', count: 10 } },
+            diamond: { name: 'ダイヤモンド', color: 'gradient-white', condition: 'ダイヤを合計300個獲得', requirement: { type: 'diamondTotal', count: 300 } },
+            star: { name: '一等星', color: 'gradient-white', condition: 'スターを合計5000個獲得', requirement: { type: 'starTotal', count: 5000 } },
+            hero: { name: '勇者', color: '#4169E1', condition: '背景を20個所持', requirement: { type: 'background', count: 20 } },
+            demonlord: { name: '魔王', color: '#9370DB', condition: 'キャラを15個所持', requirement: { type: 'character', count: 15 } }
+        };
+        
         
         // テストモード判定
         function isTestMode() { return username === 'テスト'; }
@@ -4751,7 +5467,7 @@ let bonusMoonActive = false;
         // 経験値・ランクシステム
         let experience = 0;
         let rank = 1;
-        const maxRank = 300;
+        const maxRank = 500;
         
         // ランク特典設定
         let currentCharacter = '🌚';
@@ -4774,6 +5490,7 @@ let bonusMoonActive = false;
         
         // デイリーミッションシステム
         let dailyMissions = [];
+        let dailyClaimedMissions = [];
         let dailyMissionProgress = {
             dailyTalkCount: 0,
             dailyPixivCount: 0,
@@ -4909,6 +5626,11 @@ let bonusMoonActive = false;
             { id: 'rank_220', name: 'Rank 220 に到達', type: 'rank', target: 220, reward: 3, rewardType: 'diamond' },
             { id: 'rank_250', name: 'Rank 250 に到達', type: 'rank', target: 250, reward: 3, rewardType: 'diamond' },
             { id: 'rank_275', name: 'Rank 275 に到達', type: 'rank', target: 275, reward: 3, rewardType: 'diamond' },
+            { id: 'rank_300', name: 'Rank 300 に到達', type: 'rank', target: 300, reward: 3, rewardType: 'diamond' },
+            { id: 'rank_350', name: 'Rank 350 に到達', type: 'rank', target: 350, reward: 3, rewardType: 'diamond' },
+            { id: 'rank_400', name: 'Rank 400 に到達', type: 'rank', target: 400, reward: 3, rewardType: 'diamond' },
+            { id: 'rank_450', name: 'Rank 450 に到達', type: 'rank', target: 450, reward: 3, rewardType: 'diamond' },
+            { id: 'rank_500', name: 'Rank 500 に到達', type: 'rank', target: 500, reward: 3, rewardType: 'diamond' },
         ];
         
         // デイリーミッション候補（星報酬）
@@ -4974,6 +5696,8 @@ let bonusMoonActive = false;
         
         // 🎲ランダム背景：色をランダムに更新（背景切替時に必ず停止する）
         let diceInterval = null;
+        let aquaInterval = null; // 波紋背景用のインターバル
+        
         function startDiceBackground(){
             // 既存があれば停止
             if (diceInterval) {
@@ -4990,6 +5714,24 @@ let bonusMoonActive = false;
             };
             setRand();
             diceInterval = setInterval(setRand, 1400);
+        }
+        
+        function startAquaBackground(){
+            // 既存があれば停止
+            if (aquaInterval) {
+                clearInterval(aquaInterval);
+                aquaInterval = null;
+            }
+            aquaInterval = setInterval(() => {
+                if (currentBackground === 'aqua') {
+                    const ripple = document.createElement('div');
+                    ripple.className = 'ripple';
+                    ripple.style.left = Math.random() * 100 + '%';
+                    ripple.style.top = Math.random() * 100 + '%';
+                    starsContainer.appendChild(ripple);
+                    setTimeout(() => ripple.remove(), 1500);
+                }
+            }, 2000);
         }
 
         function spawnRandomFallingEmojis(opts){
@@ -5016,6 +5758,8 @@ function generateBackgroundEffect(bgType) {
             starsContainer.innerHTML = '';
             // 🎲ランダム背景のタイマー停止
             if (diceInterval) { clearInterval(diceInterval); diceInterval = null; }
+            // 💧波紋背景のタイマー停止
+            if (aquaInterval) { clearInterval(aquaInterval); aquaInterval = null; }
             document.body.style.removeProperty('--dice1');
             document.body.style.removeProperty('--dice2');
             document.body.style.removeProperty('--dice3');
@@ -5122,6 +5866,132 @@ function generateBackgroundEffect(bgType) {
                 case 'dice':
                     startDiceBackground();
                     spawnRandomFallingEmojis({count: 22});
+                    break;
+                
+                case 'cosmos':
+                    // 回転する星空（Rank 100）
+                    for (let i = 0; i < 80; i++) {
+                        const star = document.createElement('div');
+                        star.className = 'rotating-star';
+                        const radius = Math.random() * 200 + 100;
+                        star.style.setProperty('--radius', radius + 'px');
+                        star.style.left = '50%';
+                        star.style.top = '50%';
+                        const duration = Math.random() * 20 + 20;
+                        star.style.animationDuration = duration + 's';
+                        star.style.animationDelay = -(Math.random() * duration) + 's';
+                        starsContainer.appendChild(star);
+                    }
+                    // 中心に輝く星
+                    for (let i = 0; i < 30; i++) {
+                        const centerStar = document.createElement('div');
+                        centerStar.className = 'star';
+                        centerStar.style.left = (45 + Math.random() * 10) + '%';
+                        centerStar.style.top = (45 + Math.random() * 10) + '%';
+                        centerStar.style.animationDelay = Math.random() * 3 + 's';
+                        starsContainer.appendChild(centerStar);
+                    }
+                    break;
+                
+                case 'matrix':
+                    // 幾何学模様（Rank 200）
+                    const shapes = ['circle', 'square', 'triangle'];
+                    const matrixColors = [
+                        'rgba(100, 200, 255, 0.5)',
+                        'rgba(150, 100, 255, 0.5)',
+                        'rgba(255, 100, 200, 0.5)',
+                        'rgba(100, 255, 200, 0.5)'
+                    ];
+                    for (let i = 0; i < 25; i++) {
+                        const shape = document.createElement('div');
+                        shape.className = 'geo-shape';
+                        const size = Math.random() * 60 + 30;
+                        shape.style.width = size + 'px';
+                        shape.style.height = size + 'px';
+                        shape.style.left = Math.random() * 100 + '%';
+                        shape.style.top = Math.random() * 100 + '%';
+                        shape.style.borderColor = matrixColors[Math.floor(Math.random() * matrixColors.length)];
+                        
+                        const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+                        if (shapeType === 'circle') {
+                            shape.style.borderRadius = '50%';
+                        } else if (shapeType === 'triangle') {
+                            shape.style.width = '0';
+                            shape.style.height = '0';
+                            shape.style.border = 'none';
+                            shape.style.borderLeft = (size/2) + 'px solid transparent';
+                            shape.style.borderRight = (size/2) + 'px solid transparent';
+                            shape.style.borderBottom = size + 'px solid ' + matrixColors[Math.floor(Math.random() * matrixColors.length)];
+                        }
+                        
+                        const duration = Math.random() * 10 + 10;
+                        shape.style.animationDuration = duration + 's';
+                        shape.style.animationDelay = -(Math.random() * duration) + 's';
+                        starsContainer.appendChild(shape);
+                    }
+                    break;
+                
+                case 'aqua':
+                    // 波紋背景（Rank 300）- タップで波紋が広がる
+                    // 常時ランダムに波紋が発生
+                    startAquaBackground();
+                    break;
+                
+                case 'metro':
+                    // メトロポリス（Rank 400）- スクロールする街並み
+                    // ビルを2セット生成して無限スクロール
+                    for (let set = 0; set < 2; set++) {
+                        for (let i = 0; i < 15; i++) {
+                            const building = document.createElement('div');
+                            building.className = `city-building scroll-${set + 1}`;
+                            const width = Math.random() * 80 + 50; // 50-130px
+                            const height = Math.random() * 250 + 200; // 200-450px
+                            building.style.width = width + 'px';
+                            building.style.height = height + 'px';
+                            building.style.left = (i * 140) + 'px';
+                            
+                            // ウィンドウの光を追加
+                            const windows = Math.floor(height / 20) * Math.floor(width / 15);
+                            for (let w = 0; w < Math.min(windows, 40); w++) {
+                                if (Math.random() > 0.2) {
+                                    const windowDiv = document.createElement('div');
+                                    windowDiv.style.position = 'absolute';
+                                    windowDiv.style.width = '10px';
+                                    windowDiv.style.height = '10px';
+                                    windowDiv.style.background = Math.random() > 0.5 ? '#ffeb3b' : '#ff9800';
+                                    windowDiv.style.left = (Math.random() * (width - 20) + 8) + 'px';
+                                    windowDiv.style.top = (Math.random() * (height - 20) + 8) + 'px';
+                                    windowDiv.style.boxShadow = '0 0 8px rgba(255, 235, 59, 0.9)';
+                                    building.appendChild(windowDiv);
+                                }
+                            }
+                            
+                            starsContainer.appendChild(building);
+                        }
+                    }
+                    break;
+                
+                case 'hacker':
+                    // ハッカー（Rank 500）- サイバースペース（コード風）
+                    const codeChars = ['0', '1', 'A', 'B', 'C', 'D', 'E', 'F', '{', '}', '[', ']', '<', '>', '/', '\\', '|', '*', '#', '$', '%', '&'];
+                    for (let i = 0; i < 50; i++) {
+                        const code = document.createElement('div');
+                        code.className = 'cyber-code';
+                        // ランダムなコード文字列を生成
+                        let codeText = '';
+                        const length = Math.floor(Math.random() * 10) + 5;
+                        for (let j = 0; j < length; j++) {
+                            codeText += codeChars[Math.floor(Math.random() * codeChars.length)];
+                        }
+                        code.textContent = codeText;
+                        code.style.left = Math.random() * 100 + '%';
+                        code.style.top = -(Math.random() * 100) + '%';
+                        
+                        const duration = Math.random() * 4 + 6;
+                        code.style.animationDuration = duration + 's';
+                        code.style.animationDelay = -(Math.random() * duration) + 's';
+                        starsContainer.appendChild(code);
+                    }
                     break;
 
                 case 'sea':
@@ -5756,49 +6626,167 @@ function spawnFloatingCircles(opts) {
 
 
         // LocalStorageからデータ読み込み
+        // セーブデータのエンコード・デコード
+        const SAVE_VERSION = '3'; // バージョン識別子（V3=LZString+EncodedURIComponent）
+        const SAVE_VERSION_V2 = 'V2_'; // 旧バージョン（V2=LZString+Base64）
+        const SAVE_VERSION_V1 = 'V1_'; // 旧バージョン（V1=Base64のみ）
+        
+        // JSONを固定順配列に変換してLZString圧縮
+        function encodeSaveData(data) {
+            // 固定順の配列に変換
+            const arr = [
+                data.lastInteraction,
+                data.startDate,
+                data.collectedStars,
+                data.lastStarRegenTime,
+                data.experience,
+                data.rank,
+                data.currentCharacter,
+                data.currentBackground,
+                data.unlockedCharacters,
+                data.unlockedBackgrounds,
+                data.username,
+                data.ownedDecor,
+                data.equippedDecor,
+                data.decorPlacements,
+                data.missionProgress,
+                data.claimedMissions,
+                data.dailyMissions,
+                data.dailyClaimedMissions,
+                data.dailyMissionProgress,
+                data.lastDailyResetDate,
+                data.collectedDiamonds,
+                data.diamondSpawnedToday,
+                data.lastDiamondSpawnDate,
+                data.skillDiamondLevel,
+                data.skillSpeedLevel,
+                data.skillBonusLevel,
+                data.lastPlayTime,
+                data.idleRewardClaimed,
+                data.currentTitle,
+                data.unlockedTitles,
+                data.titleProgress
+            ];
+            
+            // JSON文字列化してLZString圧縮（EncodedURIComponentはBase64より短い）
+            const jsonStr = JSON.stringify(arr);
+            const compressed = LZString.compressToEncodedURIComponent(jsonStr);
+            
+            // バージョン文字を先頭に付与
+            return SAVE_VERSION + compressed;
+        }
+        
+        // Base64/LZStringをデコードして固定順配列からJSONオブジェクトに復元
+        function decodeSaveData(encoded) {
+            // バージョンチェック
+            if (encoded.startsWith(SAVE_VERSION)) {
+                // V3形式（LZString+EncodedURIComponent）
+                const compressed = encoded.substring(SAVE_VERSION.length);
+                const jsonStr = LZString.decompressFromEncodedURIComponent(compressed);
+                const arr = JSON.parse(jsonStr);
+                
+                return arrayToObject(arr);
+            } else if (encoded.startsWith(SAVE_VERSION_V2)) {
+                // V2形式（LZString+Base64）
+                const compressed = encoded.substring(SAVE_VERSION_V2.length);
+                const jsonStr = LZString.decompressFromBase64(compressed);
+                const arr = JSON.parse(jsonStr);
+                
+                return arrayToObject(arr);
+            } else if (encoded.startsWith(SAVE_VERSION_V1)) {
+                // V1形式（Base64のみ）
+                const base64 = encoded.substring(SAVE_VERSION_V1.length);
+                const jsonStr = decodeURIComponent(escape(atob(base64)));
+                const arr = JSON.parse(jsonStr);
+                
+                return arrayToObject(arr);
+            } else {
+                // 旧形式（JSON）
+                return JSON.parse(encoded);
+            }
+        }
+        
+        // 配列をオブジェクトに変換
+        function arrayToObject(arr) {
+            return {
+                lastInteraction: arr[0],
+                startDate: arr[1],
+                collectedStars: arr[2],
+                lastStarRegenTime: arr[3],
+                experience: arr[4],
+                rank: arr[5],
+                currentCharacter: arr[6],
+                currentBackground: arr[7],
+                unlockedCharacters: arr[8],
+                unlockedBackgrounds: arr[9],
+                username: arr[10],
+                ownedDecor: arr[11],
+                equippedDecor: arr[12],
+                decorPlacements: arr[13],
+                missionProgress: arr[14],
+                claimedMissions: arr[15],
+                dailyMissions: arr[16],
+                dailyClaimedMissions: arr[17],
+                dailyMissionProgress: arr[18],
+                lastDailyResetDate: arr[19],
+                collectedDiamonds: arr[20],
+                diamondSpawnedToday: arr[21],
+                lastDiamondSpawnDate: arr[22],
+                skillDiamondLevel: arr[23],
+                skillSpeedLevel: arr[24],
+                skillBonusLevel: arr[25],
+                lastPlayTime: arr[26],
+                idleRewardClaimed: arr[27],
+                currentTitle: arr[28],
+                unlockedTitles: arr[29],
+                titleProgress: arr[30]
+            };
+        }
+        
         function loadGameData() {
             const savedData = safeStorage.getItem('otofuGameData');
             if (savedData) {
-                const data = JSON.parse(savedData);
-                lastInteraction = data.lastInteraction || Date.now();
-                startDate = data.startDate || Date.now();
-                collectedStars = data.collectedStars !== undefined ? data.collectedStars : 10;
-                lastStarRegenTime = data.lastStarRegenTime || Date.now();
-                experience = data.experience || 0;
-                rank = data.rank || 1;
-                currentCharacter = data.currentCharacter || '🌚';
-                currentBackground = data.currentBackground || 'night';
-                unlockedCharacters = data.unlockedCharacters || ['🌚'];
-                unlockedBackgrounds = data.unlockedBackgrounds || ['night'];
-                username = data.username || '名前を入力';
-                ownedDecor = data.ownedDecor || {};
-                equippedDecor = data.equippedDecor || [null, null, null];
-                decorPlacements = data.decorPlacements || [null, null, null];
-                missionProgress = data.missionProgress || { talkCount: 0, pixivCount: 0 };
-                claimedMissions = data.claimedMissions || [];
-                dailyMissions = data.dailyMissions || [];
-                dailyMissionProgress = data.dailyMissionProgress || { dailyTalkCount: 0, dailyPixivCount: 0, openedGacha: false, changedDecor: false };
-                lastDailyResetDate = data.lastDailyResetDate || null;
-                collectedDiamonds = data.collectedDiamonds || 0;
-                diamondSpawnedToday = data.diamondSpawnedToday || 0;
-                lastDiamondSpawnDate = data.lastDiamondSpawnDate || null;
-                skillDiamondLevel = (data.skillDiamondLevel !== undefined && data.skillDiamondLevel !== null) ? data.skillDiamondLevel : 0;
-                skillSpeedLevel = (data.skillSpeedLevel !== undefined && data.skillSpeedLevel !== null) ? data.skillSpeedLevel : 0;
-                skillBonusLevel = (data.skillBonusLevel !== undefined && data.skillBonusLevel !== null) ? data.skillBonusLevel : 0;
+                try {
+                    // デコード（旧形式・新形式両対応）
+                    const data = decodeSaveData(savedData);
+                    
+                    lastInteraction = data.lastInteraction || Date.now();
+                    startDate = data.startDate || Date.now();
+                    collectedStars = data.collectedStars !== undefined ? data.collectedStars : 10;
+                    lastStarRegenTime = data.lastStarRegenTime || Date.now();
+                    experience = data.experience || 0;
+                    rank = data.rank || 1;
+                    currentCharacter = data.currentCharacter || '🌚';
+                    currentBackground = data.currentBackground || 'night';
+                    unlockedCharacters = data.unlockedCharacters || ['🌚'];
+                    unlockedBackgrounds = data.unlockedBackgrounds || ['night'];
+                    username = data.username || '名前を入力';
+                    ownedDecor = data.ownedDecor || {};
+                    equippedDecor = data.equippedDecor || [null, null, null];
+                    decorPlacements = data.decorPlacements || [null, null, null];
+                    missionProgress = data.missionProgress || { talkCount: 0, pixivCount: 0 };
+                    claimedMissions = data.claimedMissions || [];
+                    dailyMissions = data.dailyMissions || [];
+                    dailyClaimedMissions = data.dailyClaimedMissions || [];
+                    dailyMissionProgress = data.dailyMissionProgress || { dailyTalkCount: 0, dailyPixivCount: 0, openedGacha: false, changedDecor: false };
+                    lastDailyResetDate = data.lastDailyResetDate || null;
+                    collectedDiamonds = data.collectedDiamonds || 0;
+                    diamondSpawnedToday = data.diamondSpawnedToday || 0;
+                    lastDiamondSpawnDate = data.lastDiamondSpawnDate || null;
+                    skillDiamondLevel = (data.skillDiamondLevel !== undefined && data.skillDiamondLevel !== null) ? data.skillDiamondLevel : 0;
+                    skillSpeedLevel = (data.skillSpeedLevel !== undefined && data.skillSpeedLevel !== null) ? data.skillSpeedLevel : 0;
+                    skillBonusLevel = (data.skillBonusLevel !== undefined && data.skillBonusLevel !== null) ? data.skillBonusLevel : 0;
+                    lastPlayTime = data.lastPlayTime || Date.now();
+                    idleRewardClaimed = (data.idleRewardClaimed !== undefined) ? data.idleRewardClaimed : true;
+                    currentTitle = data.currentTitle || 'newcomer';
+                    unlockedTitles = data.unlockedTitles || ['newcomer'];
+                    titleProgress = data.titleProgress || { pixivCount: 0, talkCount: 0, shopPurchaseCount: 0, totalDiamonds: 0, totalStars: 0 };
+                } catch (e) {
+                    // デコード失敗時は初期化
+                    initializeDefaultData();
+                }
             } else {
-                startDate = Date.now();
-                collectedStars = 10;
-                lastStarRegenTime = Date.now();
-                experience = 0;
-                rank = 1;
-                currentCharacter = '🌚';
-                currentBackground = 'night';
-                unlockedCharacters = ['🌚'];
-                unlockedBackgrounds = ['night'];
-                username = '名前を入力';
-                ownedDecor = {};
-                equippedDecor = [null, null, null];
-                decorPlacements = [null, null, null];
+                initializeDefaultData();
             }
             
             // 特典を適用
@@ -5822,7 +6810,7 @@ function spawnFloatingCircles(opts) {
                 // 全キャラクター解放
                 unlockedCharacters = ['🌚', '🐵', '🤡', '🌝', '🐸', '🦭', '👁️', '🦧', '👹', '👽', '🐲', '🌞'];
                 // 全背景解放
-                unlockedBackgrounds = ['night', 'snow', 'forest', 'rain', 'rainbow', 'city', 'sakura', 'lava', 'aurora', 'dream', 'earth', 'toilet', 'music', 'love'];
+                unlockedBackgrounds = ['night', 'snow', 'forest', 'rain', 'rainbow', 'city', 'sakura', 'lava', 'aurora', 'dream', 'earth', 'toilet', 'music', 'love', 'cosmos', 'matrix', 'aqua', 'metro', 'hacker'];
                 // 全飾り解放（各1個）
                 ownedDecor = {
                     '🎈': 1, '🍦': 1, '🍡': 1, '☕️': 1,
@@ -5845,6 +6833,40 @@ function spawnFloatingCircles(opts) {
             renderPlaceableDecor();
         }
         
+        // デフォルトデータで初期化
+        function initializeDefaultData() {
+            startDate = Date.now();
+            collectedStars = 10;
+            lastStarRegenTime = Date.now();
+            experience = 0;
+            rank = 1;
+            currentCharacter = '🌚';
+            currentBackground = 'night';
+            unlockedCharacters = ['🌚'];
+            unlockedBackgrounds = ['night'];
+            username = '名前を入力';
+            ownedDecor = {};
+            equippedDecor = [null, null, null];
+            decorPlacements = [null, null, null];
+            missionProgress = { talkCount: 0, pixivCount: 0 };
+            claimedMissions = [];
+            dailyMissions = [];
+            dailyClaimedMissions = [];
+            dailyMissionProgress = { dailyTalkCount: 0, dailyPixivCount: 0, openedGacha: false, changedDecor: false };
+            lastDailyResetDate = null;
+            collectedDiamonds = 0;
+            diamondSpawnedToday = 0;
+            lastDiamondSpawnDate = null;
+            skillDiamondLevel = 0;
+            skillSpeedLevel = 0;
+            skillBonusLevel = 0;
+            lastPlayTime = Date.now();
+            idleRewardClaimed = true;
+            currentTitle = 'newcomer';
+            unlockedTitles = ['newcomer'];
+            titleProgress = { pixivCount: 0, talkCount: 0, shopPurchaseCount: 0, totalDiamonds: 0, totalStars: 0 };
+        }
+        
         // デイリーミッションのリセットと生成
         function checkAndResetDailyMissions() {
             const today = new Date().toDateString();
@@ -5858,6 +6880,7 @@ function spawnFloatingCircles(opts) {
                     openedGacha: false,
                     changedDecor: false
                 };
+                dailyClaimedMissions = []; // デイリー受け取り状態もリセット
                 
                 // 新しいデイリーミッションを3個生成：1個はダイヤ報酬、2個は星報酬
                 const shuffledDiamond = [...dailyMissionTemplatesDiamond].sort(() => Math.random() - 0.5);
@@ -5900,6 +6923,7 @@ function spawnFloatingCircles(opts) {
                 missionProgress: missionProgress,
                 claimedMissions: claimedMissions,
                 dailyMissions: dailyMissions,
+                dailyClaimedMissions: dailyClaimedMissions,
                 dailyMissionProgress: dailyMissionProgress,
                 lastDailyResetDate: lastDailyResetDate,
                 collectedDiamonds: collectedDiamonds,
@@ -5907,9 +6931,17 @@ function spawnFloatingCircles(opts) {
                 lastDiamondSpawnDate: lastDiamondSpawnDate,
                 skillDiamondLevel: skillDiamondLevel,
                 skillSpeedLevel: skillSpeedLevel,
-                skillBonusLevel: skillBonusLevel
+                skillBonusLevel: skillBonusLevel,
+                lastPlayTime: lastPlayTime,
+                idleRewardClaimed: idleRewardClaimed,
+                currentTitle: currentTitle,
+                unlockedTitles: unlockedTitles,
+                titleProgress: titleProgress
             };
-            safeStorage.setItem('otofuGameData', JSON.stringify(data));
+            
+            // エンコードして保存
+            const encoded = encodeSaveData(data);
+            safeStorage.setItem('otofuGameData', encoded);
         }
         
         // 星カウンター更新
@@ -5941,6 +6973,24 @@ function spawnFloatingCircles(opts) {
                 rank = newRank;
                 updateRankDisplay();
                 showDialogue(`ランクアップ！Rank ${rank} になった🎉`, true);
+                
+                // ランク報酬で背景を解放
+                if (rank === 100 && !unlockedBackgrounds.includes('cosmos')) {
+                    unlockedBackgrounds.push('cosmos');
+                    showDialogue('新しい背景「コスモ」を手に入れた！💫', true);
+                } else if (rank === 200 && !unlockedBackgrounds.includes('matrix')) {
+                    unlockedBackgrounds.push('matrix');
+                    showDialogue('新しい背景「マトリックス」を手に入れた！🔷', true);
+                } else if (rank === 300 && !unlockedBackgrounds.includes('aqua')) {
+                    unlockedBackgrounds.push('aqua');
+                    showDialogue('新しい背景「アクア」を手に入れた！💧', true);
+                } else if (rank === 400 && !unlockedBackgrounds.includes('metro')) {
+                    unlockedBackgrounds.push('metro');
+                    showDialogue('新しい背景「メトロポリス」を手に入れた！🏙️', true);
+                } else if (rank === 500 && !unlockedBackgrounds.includes('hacker')) {
+                    unlockedBackgrounds.push('hacker');
+                    showDialogue('新しい背景「ハッカー」を手に入れた！💻', true);
+                }
             }
             
             saveGameData();
@@ -6156,19 +7206,23 @@ function spawnFloatingCircles(opts) {
                 if (collectedDiamonds >= maxDiamonds) return;
                 starElement.classList.add('collected');
                 collectedDiamonds++;
+                titleProgress.totalDiamonds++;
                 updateDiamondCounter();
                 addExperience(10);
                 saveGameData();
                 playStarSound();
+                checkTitleUnlocks();
             } else {
                 // 星を回収
                 if (collectedStars >= maxStars) return;
                 starElement.classList.add('collected');
                 collectedStars++;
+                titleProgress.totalStars++;
                 updateStarCounter();
                 addExperience(5);
                 saveGameData();
                 playStarSound();
+                checkTitleUnlocks();
             }
             
             setTimeout(() => {
@@ -6652,7 +7706,7 @@ function spawnFloatingCircles(opts) {
             "もっと上手くなりたい🌚🌚", "まともな絵が描けるようになりたい🥰🥰",
             "コントラポストが決まらない🙉🙉", "絵柄分析してたら時間溶けた🤡🤡",
             "今日はスランプだわ🐸🐸", "絵が下手すぎて死にたい🌚🌚",
-            "1万いいね目指すぜ🥰🥰", "平均1万いいねなんだけどな🤡",
+            "1万いいね目指すぜ🥰🥰",
             
             // 鍵垢引用・悪口
             "顔破綻してる絵で笑ってしまう🙉🙉", "この絵顔おかしいだろ🤡🤡",
@@ -6665,6 +7719,32 @@ function spawnFloatingCircles(opts) {
             "もっと上手くなりたい🥰🥰", "今日は褐色描くぜ🙉🙉",
             
             // ---- 新規追加セリフ ----
+            "一蘭ってちょっとトッピングしたら1500円くらいになるよな🙉",
+            "アスパラガス🥰",
+            "22:22🌚",
+            "ハムちん！ハムちん触るです！🤡",
+            "なんで女性絵描きって全員猫飼ってるんだ？🐸",
+            "シベリアンハスキー飼いてぇ〜🥰🥰",
+            "鍵垢引用リツイートだけが唯一の楽しみ🙉🙉",
+            "バスケ部と軽音部とサッカー部の男、結婚してくれ🌚🌚",
+            "Chu！ 可愛くてごめん♪🤡🥰",
+            "調子乗ってミッション増やしすぎたかも すまぬ🐸",
+            "舐めた顔描くな👹",
+            "板チョコみたいな腹筋描くのやめてくれ🙉",
+            "ワンドロって言って実は3時間くらいかけてる絵描きとかいそう🌚",
+            "少女漫画ってどっちかが風邪になって看病に行くシチュエーションやたらと多くない？🤡",
+            "受けだからといってちんちんが小さくていいわけじゃない🙉🙉",
+            "ポチンキ🥰",
+            "シベリアンハスキーって擬人化したらイケメンが約束されるビジュしてるよな🌚🌚",
+            "名前に「牙」とか「龍」とかついてる男キャラ、大体おじさんの好み説🐸",
+            "褐色タトゥーピアスだったらなんでもいいわけじゃないんです おじさんは「魂」を見ているんです👁️",
+            "あっ シティヘブン見ました🤡",
+            "そろそろ休憩しない？🥰",
+            "もしノールックでタップ連打されててこのセリフ全然読まれてなかったらどうしよう🙉",
+            "ワクワクさんって今何してるんだろ🌚",
+            "BL漫画とか同人誌って毎回下準備とかしてないけどあれどうなってんだ🐸",
+            "グミ超うめぇ🥰🥰",
+            "たまに商店街にどうやって生計を立ててるのかわからない謎の店ない？🤡",
             
             // 生活・日常
             "最近朝起きれなくなってきた",
@@ -6964,6 +8044,266 @@ collectedStars -= cost;
             }, { title: 'スキルアップ確認', yesText: 'はい', noText: 'いいえ' });
         }
         
+        // 放置報酬システム
+        function checkIdleReward() {
+            const now = Date.now();
+            const idleTime = now - lastPlayTime; // ミリ秒
+            const idleHours = idleTime / (1000 * 60 * 60); // 時間に変換
+            
+            // 1時間以上放置していて、まだ報酬を受け取っていない場合
+            if (idleHours >= 1 && !idleRewardClaimed) {
+                const cappedHours = Math.min(Math.floor(idleHours), 10); // 最大10時間
+                const rewardStars = cappedHours * 10; // 1時間10スター
+                
+                showIdleRewardModal(cappedHours, rewardStars);
+            } else {
+                // 新しいセッション開始
+                lastPlayTime = now;
+                idleRewardClaimed = false;
+                saveGameData();
+            }
+        }
+        
+        function showIdleRewardModal(hours, stars) {
+            const modal = document.getElementById('idle-reward-modal');
+            const timeDisplay = document.getElementById('idle-time-display');
+            const rewardAmount = document.getElementById('idle-reward-amount');
+            
+            timeDisplay.textContent = `${hours}時間放置していました`;
+            rewardAmount.textContent = `⭐ ${stars}個`;
+            
+            // モーダルにデータ属性として保存
+            modal.dataset.rewardHours = hours;
+            modal.dataset.rewardStars = stars;
+            
+            modal.style.display = 'flex';
+        }
+        
+        function claimIdleReward() {
+            const modal = document.getElementById('idle-reward-modal');
+            const rewardStars = parseInt(modal.dataset.rewardStars) || 0;
+            
+            // 効果音を再生
+            playCollectAllSound();
+            
+            // 報酬を付与
+            collectedStars = Math.min(collectedStars + rewardStars, maxStars);
+            updateStarCounter();
+            
+            // 報酬受け取り済みにする
+            idleRewardClaimed = true;
+            lastPlayTime = Date.now();
+            saveGameData();
+            
+            // モーダルを閉じる
+            modal.style.display = 'none';
+            
+            // メッセージ表示
+            showDialogue(`放置報酬を受け取りました！⭐ ${rewardStars}個`, true);
+        }
+        
+        // 称号システム関数
+        function checkTitleUnlocks() {
+            Object.keys(titles).forEach(titleId => {
+                if (unlockedTitles.includes(titleId)) return;
+                
+                const title = titles[titleId];
+                if (!title.requirement) return;
+                
+                let unlocked = false;
+                
+                switch(title.requirement.type) {
+                    case 'pixiv':
+                        unlocked = titleProgress.pixivCount >= title.requirement.count;
+                        break;
+                    case 'talk':
+                        unlocked = titleProgress.talkCount >= title.requirement.count;
+                        break;
+                    case 'rank':
+                        unlocked = rank >= title.requirement.count;
+                        break;
+                    case 'skillMax':
+                        unlocked = skillDiamondLevel >= 5 && skillSpeedLevel >= 5 && skillBonusLevel >= 5;
+                        break;
+                    case 'shop':
+                        unlocked = titleProgress.shopPurchaseCount >= title.requirement.count;
+                        break;
+                    case 'background':
+                        unlocked = unlockedBackgrounds.length >= title.requirement.count;
+                        break;
+                    case 'character':
+                        unlocked = unlockedCharacters.length >= title.requirement.count;
+                        break;
+                    case 'diamondTotal':
+                        unlocked = titleProgress.totalDiamonds >= title.requirement.count;
+                        break;
+                    case 'starTotal':
+                        unlocked = titleProgress.totalStars >= title.requirement.count;
+                        break;
+                }
+                
+                if (unlocked) {
+                    unlockedTitles.push(titleId);
+                    showDialogue(`🏆 称号「${title.name}」をアンロックしました！`, true);
+                    saveGameData();
+                }
+            });
+        }
+        
+        function updateTitleDisplay() {
+            const titleText = document.getElementById('title-text');
+            const titleDisplay = document.getElementById('title-display');
+            const usernameDisplay = document.getElementById('username-display');
+            
+            const title = titles[currentTitle];
+            titleText.textContent = title.name;
+            
+            // 枠の色を更新
+            updateBorderColor(title.color);
+        }
+        
+        function updateBorderColor(color) {
+            const titleDisplay = document.getElementById('title-display');
+            const usernameDisplay = document.getElementById('username-display');
+            const rankBox = document.getElementById('rank-box');
+            const rankDisplay = document.getElementById('rank-display');
+            
+            if (color === 'rainbow') {
+                // 虹色 - 背景グラデーションで実装
+                titleDisplay.style.border = 'none';
+                titleDisplay.style.borderRadius = '15px';
+                titleDisplay.style.background = 'linear-gradient(#1a1a1a, #1a1a1a) padding-box, linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) border-box';
+                titleDisplay.style.border = '2px solid transparent';
+                titleDisplay.style.boxShadow = 'none';
+                titleDisplay.style.color = '#FFFFFF';
+                titleDisplay.style.textShadow = 'none';
+                
+                usernameDisplay.style.border = 'none';
+                usernameDisplay.style.borderRadius = '25px';
+                usernameDisplay.style.background = 'linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(40, 40, 40, 0.95)) padding-box, linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) border-box';
+                usernameDisplay.style.border = '3px solid transparent';
+                usernameDisplay.style.boxShadow = 'none';
+                usernameDisplay.style.color = '#FFFFFF';
+                usernameDisplay.style.textShadow = 'none';
+                
+                rankBox.style.border = 'none';
+                rankBox.style.borderRadius = '20px';
+                rankBox.style.background = 'linear-gradient(#1a1a1a, #1a1a1a) padding-box, linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) border-box';
+                rankBox.style.border = '3px solid transparent';
+                rankBox.style.boxShadow = 'none';
+                rankDisplay.style.color = '#FFFFFF';
+                rankDisplay.style.textShadow = 'none';
+            } else if (color === 'gradient-white') {
+                // グラデーションホワイト - パステルカラーの色相変化
+                titleDisplay.style.border = 'none';
+                titleDisplay.style.borderRadius = '15px';
+                titleDisplay.style.background = 'linear-gradient(#1a1a1a, #1a1a1a) padding-box, linear-gradient(90deg, #FFB3BA, #FFDFBA, #FFFFBA, #BAFFC9, #BAE1FF, #D4BAFF, #FFB3F0) border-box';
+                titleDisplay.style.border = '2px solid transparent';
+                titleDisplay.style.boxShadow = 'none';
+                titleDisplay.style.color = '#FFFFFF';
+                titleDisplay.style.textShadow = 'none';
+                
+                usernameDisplay.style.border = 'none';
+                usernameDisplay.style.borderRadius = '25px';
+                usernameDisplay.style.background = 'linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(40, 40, 40, 0.95)) padding-box, linear-gradient(90deg, #FFB3BA, #FFDFBA, #FFFFBA, #BAFFC9, #BAE1FF, #D4BAFF, #FFB3F0) border-box';
+                usernameDisplay.style.border = '3px solid transparent';
+                usernameDisplay.style.boxShadow = 'none';
+                usernameDisplay.style.color = '#FFFFFF';
+                usernameDisplay.style.textShadow = 'none';
+                
+                rankBox.style.border = 'none';
+                rankBox.style.borderRadius = '20px';
+                rankBox.style.background = 'linear-gradient(#1a1a1a, #1a1a1a) padding-box, linear-gradient(90deg, #FFB3BA, #FFDFBA, #FFFFBA, #BAFFC9, #BAE1FF, #D4BAFF, #FFB3F0) border-box';
+                rankBox.style.border = '3px solid transparent';
+                rankBox.style.boxShadow = 'none';
+                rankDisplay.style.color = '#FFFFFF';
+                rankDisplay.style.textShadow = 'none';
+            } else {
+                // 単色
+                titleDisplay.style.border = `2px solid ${color}`;
+                titleDisplay.style.borderRadius = '15px';
+                titleDisplay.style.background = 'rgba(0, 0, 0, 0.7)';
+                titleDisplay.style.color = color;
+                titleDisplay.style.textShadow = 'none';
+                titleDisplay.style.boxShadow = 'none';
+                
+                usernameDisplay.style.border = `3px solid ${color}`;
+                usernameDisplay.style.borderRadius = '25px';
+                usernameDisplay.style.background = 'linear-gradient(135deg, rgba(0, 0, 0, 0.85) 0%, rgba(40, 40, 40, 0.95) 100%)';
+                usernameDisplay.style.color = color;
+                usernameDisplay.style.textShadow = 'none';
+                usernameDisplay.style.boxShadow = 'none';
+                
+                rankBox.style.border = `3px solid ${color}`;
+                rankBox.style.borderRadius = '20px';
+                rankBox.style.background = '';
+                rankBox.style.boxShadow = 'none';
+                
+                rankDisplay.style.color = color;
+                rankDisplay.style.textShadow = 'none';
+            }
+        }
+        
+        function openTitleModal() {
+            checkTitleUnlocks();
+            renderTitleList();
+            document.getElementById('title-modal').style.display = 'flex';
+        }
+        
+        function renderTitleList() {
+            const titleList = document.getElementById('title-list');
+            titleList.innerHTML = '';
+            
+            Object.keys(titles).forEach(titleId => {
+                const title = titles[titleId];
+                const isUnlocked = unlockedTitles.includes(titleId);
+                const isEquipped = currentTitle === titleId;
+                
+                const titleItem = document.createElement('div');
+                titleItem.className = 'title-item';
+                if (!isUnlocked) titleItem.classList.add('locked');
+                if (isEquipped) titleItem.classList.add('equipped');
+                
+                const titleName = document.createElement('div');
+                titleName.className = 'title-name';
+                titleName.textContent = isUnlocked ? title.name : '???';
+                titleName.style.color = isUnlocked ? (title.color === 'rainbow' ? '#FFFFFF' : (title.color === 'gradient-white' ? '#FFFFFF' : title.color)) : '#666';
+                
+                const titleCondition = document.createElement('div');
+                titleCondition.className = 'title-condition';
+                titleCondition.textContent = title.condition;
+                
+                const titleStatus = document.createElement('div');
+                titleStatus.className = 'title-status';
+                if (isEquipped) {
+                    titleStatus.textContent = '✓ 装備中';
+                } else if (isUnlocked) {
+                    titleStatus.textContent = 'クリックで装備';
+                } else {
+                    titleStatus.textContent = '🔒 未解放';
+                    titleStatus.style.color = '#888';
+                }
+                
+                titleItem.appendChild(titleName);
+                titleItem.appendChild(titleCondition);
+                titleItem.appendChild(titleStatus);
+                
+                if (isUnlocked && !isEquipped) {
+                    titleItem.addEventListener('click', () => equipTitle(titleId));
+                }
+                
+                titleList.appendChild(titleItem);
+            });
+        }
+        
+        function equipTitle(titleId) {
+            currentTitle = titleId;
+            updateTitleDisplay();
+            renderTitleList();
+            saveGameData();
+            showDialogue(`称号「${titles[titleId].name}」を装備しました！`, true);
+        }
+        
         // 星のポップアップ間隔を更新
         let starSpawnInterval = null;
         
@@ -7062,8 +8402,23 @@ collectedStars -= cost;
             addExperience(1);
             missionProgress.talkCount++;
             dailyMissionProgress.dailyTalkCount++;
+            titleProgress.talkCount++;  // 称号カウント追加
             lastInteraction = Date.now();
             saveGameData();
+            checkTitleUnlocks();  // 称号チェック
+        });
+        
+        // aqua背景用のタップイベント（波紋）
+        document.body.addEventListener('click', (e) => {
+            if (currentBackground === 'aqua') {
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                ripple.style.left = e.clientX + 'px';
+                ripple.style.top = e.clientY + 'px';
+                ripple.style.transform = 'translate(-50%, -50%)';
+                starsContainer.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 1500);
+            }
         });
         
         // pixivボタン
@@ -7077,8 +8432,10 @@ collectedStars -= cost;
                 updateStarCounter();
                 missionProgress.pixivCount++;
                 dailyMissionProgress.dailyPixivCount++;
+                titleProgress.pixivCount++;  // 称号カウント追加
                 saveGameData();
                 addExperience(20);
+                checkTitleUnlocks();  // 称号チェック
                 
                 // ランダムでキャラ興奮セリフか性癖セリフを選択
                 const isFetishDialogue = Math.random() < 0.3; // 30%の確率で性癖セリフ
@@ -7105,6 +8462,11 @@ collectedStars -= cost;
         
         closeMissionBtn.addEventListener('click', () => {
             missionModal.classList.remove('show');
+        });
+        
+        // 一括受け取りボタン
+        document.getElementById('claim-all-missions-btn').addEventListener('click', () => {
+            claimAllMissions();
         });
         
         missionModal.addEventListener('click', (e) => {
@@ -7220,12 +8582,17 @@ collectedStars -= cost;
             if (unlockedBackgrounds.includes('champagne')) return;
             if (collectedDiamonds < 20) return;
             showConfirmModal('🥂 シャンパン背景を購入しますか？（💎20）', () => {
+                playActionSound();
                 collectedDiamonds -= 20;
                 unlockedBackgrounds.push('champagne');
+                titleProgress.shopPurchaseCount++;
+                titleProgress.shopPurchaseCount++;
                 updateDiamondCounter();
                 saveGameData();
                 updateShopButtons();
                 updateClosetItems();
+                checkTitleUnlocks();
+                checkTitleUnlocks();
                 showDialogue('🥂 シャンパン背景を購入した！', true);
             });
         });
@@ -7255,12 +8622,17 @@ collectedStars -= cost;
             if (unlockedBackgrounds.includes('disco')) return;
             if (collectedDiamonds < 20) return;
             showConfirmModal('🪩 ミラーボール背景を購入しますか？（💎20）', () => {
+                playActionSound();
                 collectedDiamonds -= 20;
                 unlockedBackgrounds.push('disco');
+                titleProgress.shopPurchaseCount++;
+                titleProgress.shopPurchaseCount++;
                 updateDiamondCounter();
                 saveGameData();
                 updateShopButtons();
                 updateClosetItems();
+                checkTitleUnlocks();
+                checkTitleUnlocks();
                 showDialogue('🪩 ミラーボール背景を購入した！', true);
             });
         });
@@ -7290,12 +8662,15 @@ collectedStars -= cost;
             if (unlockedBackgrounds.includes('sea')) return;
             if (collectedDiamonds < 20) return;
             showConfirmModal('🏝️ 海背景を購入しますか？（💎20）', () => {
+                playActionSound();
                 collectedDiamonds -= 20;
                 unlockedBackgrounds.push('sea');
+                titleProgress.shopPurchaseCount++;
                 updateDiamondCounter();
                 saveGameData();
                 updateShopButtons();
                 updateClosetItems();
+                checkTitleUnlocks();
                 showDialogue('🏝️ 海背景を購入した！', true);
             });
         });
@@ -7325,12 +8700,15 @@ collectedStars -= cost;
             if (unlockedBackgrounds.includes('morpho')) return;
             if (collectedStars < 200) return;
             showConfirmModal('🦋 モルフォ蝶背景を購入しますか？（⭐200）', () => {
+                playActionSound();
                 collectedStars -= 200;
                 unlockedBackgrounds.push('morpho');
+                titleProgress.shopPurchaseCount++;
                 updateStarCounter();
                 saveGameData();
                 updateShopButtons();
                 updateClosetItems();
+                checkTitleUnlocks();
                 showDialogue('🦋 モルフォ蝶背景を購入した！', true);
             });
         });
@@ -7360,12 +8738,15 @@ collectedStars -= cost;
             if (unlockedBackgrounds.includes('cards')) return;
             if (collectedDiamonds < 20) return;
             showConfirmModal('🃏 トランプ背景を購入しますか？（💎20）', () => {
+                playActionSound();
                 collectedDiamonds -= 20;
                 unlockedBackgrounds.push('cards');
+                titleProgress.shopPurchaseCount++;
                 updateDiamondCounter();
                 saveGameData();
                 updateShopButtons();
                 updateClosetItems();
+                checkTitleUnlocks();
                 showDialogue('🃏 トランプ背景を購入した！', true);
             });
         });
@@ -7395,12 +8776,15 @@ collectedStars -= cost;
             if (unlockedBackgrounds.includes('neoncandy')) return;
             if (collectedDiamonds < 20) return;
             showConfirmModal('🍬 ネオン背景を購入しますか？（💎20）', () => {
+                playActionSound();
                 collectedDiamonds -= 20;
                 unlockedBackgrounds.push('neoncandy');
+                titleProgress.shopPurchaseCount++;
                 updateDiamondCounter();
                 saveGameData();
                 updateShopButtons();
                 updateClosetItems();
+                checkTitleUnlocks();
                 showDialogue('🍬 ネオン背景を購入した！', true);
             });
         });
@@ -7430,12 +8814,15 @@ collectedStars -= cost;
             if (unlockedBackgrounds.includes('fries')) return;
             if (collectedStars < 200) return;
             showConfirmModal('🍟 ポテト背景を購入しますか？（⭐200）', () => {
+                playActionSound();
                 collectedStars -= 200;
                 unlockedBackgrounds.push('fries');
+                titleProgress.shopPurchaseCount++;
                 updateStarCounter();
                 saveGameData();
                 updateShopButtons();
                 updateClosetItems();
+                checkTitleUnlocks();
                 showDialogue('🍟 ポテト背景を購入した！', true);
             });
         });
@@ -7465,12 +8852,15 @@ collectedStars -= cost;
             if (unlockedBackgrounds.includes('dice')) return;
             if (collectedDiamonds < 20) return;
             showConfirmModal('🎲 ランダム背景を購入しますか？（💎20）', () => {
+                playActionSound();
                 collectedDiamonds -= 20;
                 unlockedBackgrounds.push('dice');
+                titleProgress.shopPurchaseCount++;
                 updateDiamondCounter();
                 saveGameData();
                 updateShopButtons();
                 updateClosetItems();
+                checkTitleUnlocks();
                 showDialogue('🎲 ランダム背景を購入した！', true);
             });
         });
@@ -7559,6 +8949,7 @@ function hideConfirmModal() {
                 showConfirmModal(
                     '💎 ダイヤ × 1<br>⭐️ 30個で購入しますか？',
                     () => {
+                        playActionSound();
                         collectedStars -= 30;
                         collectedDiamonds += 1;
                         updateStarCounter();
@@ -7580,6 +8971,7 @@ function hideConfirmModal() {
                     showConfirmModal(
                         '😎 クール<br>⭐️ 100個で購入しますか？',
                         () => {
+                            playActionSound();
                             collectedStars -= 100;
                             unlockedCharacters.push('😎');
                             updateStarCounter();
@@ -7601,6 +8993,7 @@ function hideConfirmModal() {
                     showConfirmModal(
                         '🦄 ユニコーン<br>💎 10個で購入しますか？',
                         () => {
+                            playActionSound();
                             collectedDiamonds -= 10;
                             unlockedCharacters.push('🦄');
                             updateDiamondCounter();
@@ -7622,8 +9015,10 @@ function hideConfirmModal() {
                     showConfirmModal(
                         '💰 マネー背景<br>⭐️ 200個で購入しますか？',
                         () => {
+                            playActionSound();
                             collectedStars -= 200;
                             unlockedBackgrounds.push('money');
+                titleProgress.shopPurchaseCount++;
                             updateStarCounter();
                             saveGameData();
                             updateShopButtons();
@@ -7643,8 +9038,10 @@ function hideConfirmModal() {
                     showConfirmModal(
                         '💍 ジュエル背景<br>💎 20個で購入しますか？',
                         () => {
+                            playActionSound();
                             collectedDiamonds -= 20;
                             unlockedBackgrounds.push('jewel');
+                titleProgress.shopPurchaseCount++;
                             updateDiamondCounter();
                             saveGameData();
                             updateShopButtons();
@@ -7710,7 +9107,7 @@ function hideConfirmModal() {
                 }
                 
                 const isCompleted = currentProgress >= mission.target;
-                const isClaimed = claimedMissions.includes(mission.id);
+                const isClaimed = dailyClaimedMissions.includes(mission.id);
                 
                 // 受け取り済みは表示しない
                 if (isClaimed) {
@@ -7748,7 +9145,7 @@ function hideConfirmModal() {
                     claimBtn.className = 'mission-claim-btn';
                     claimBtn.textContent = '報酬を受け取る';
                     claimBtn.addEventListener('click', () => {
-                        claimMissionReward(mission);
+                        claimMissionReward(mission, isDaily);
                     });
                     missionItem.appendChild(claimBtn);
                 }
@@ -7762,7 +9159,7 @@ function hideConfirmModal() {
             }
         }
         
-        function claimMissionReward(mission) {
+        function claimMissionReward(mission, isDaily = false) {
             if (mission.rewardType === 'diamond') {
                 // ダイヤ報酬
                 collectedDiamonds = Math.min(collectedDiamonds + mission.reward, maxDiamonds);
@@ -7772,10 +9169,104 @@ function hideConfirmModal() {
                 collectedStars = Math.min(collectedStars + mission.reward, maxStars);
                 updateStarCounter();
             }
-            claimedMissions.push(mission.id);
+            
+            // デイリーミッションか通常ミッションかで分ける
+            if (isDaily) {
+                dailyClaimedMissions.push(mission.id);
+            } else {
+                claimedMissions.push(mission.id);
+            }
+            
             saveGameData();
             updateMissionList();
             playStarSound();
+        }
+        
+        // 一括受け取り関数
+        function claimAllMissions() {
+            let claimedCount = 0;
+            let totalStars = 0;
+            let totalDiamonds = 0;
+            
+            // 通常ミッション
+            missions.forEach(mission => {
+                if (claimedMissions.includes(mission.id)) return;
+                
+                let currentProgress = 0;
+                switch(mission.type) {
+                    case 'talk':
+                        currentProgress = missionProgress.talkCount;
+                        break;
+                    case 'pixiv':
+                        currentProgress = missionProgress.pixivCount;
+                        break;
+                    case 'rank':
+                        currentProgress = rank;
+                        break;
+                }
+                
+                if (currentProgress >= mission.target) {
+                    if (mission.rewardType === 'diamond') {
+                        totalDiamonds += mission.reward;
+                    } else {
+                        totalStars += mission.reward;
+                    }
+                    claimedMissions.push(mission.id);
+                    claimedCount++;
+                }
+            });
+            
+            // デイリーミッション
+            dailyMissions.forEach(mission => {
+                if (dailyClaimedMissions.includes(mission.id)) return;
+                
+                let currentProgress = 0;
+                switch(mission.type) {
+                    case 'dailyTalk':
+                        currentProgress = dailyMissionProgress.dailyTalkCount;
+                        break;
+                    case 'dailyPixiv':
+                        currentProgress = dailyMissionProgress.dailyPixivCount;
+                        break;
+                    case 'openGacha':
+                        currentProgress = dailyMissionProgress.openedGacha ? 1 : 0;
+                        break;
+                    case 'changeDecor':
+                        currentProgress = dailyMissionProgress.changedDecor ? 1 : 0;
+                        break;
+                }
+                
+                if (currentProgress >= mission.target) {
+                    if (mission.rewardType === 'diamond') {
+                        totalDiamonds += mission.reward;
+                    } else {
+                        totalStars += mission.reward;
+                    }
+                    dailyClaimedMissions.push(mission.id);
+                    claimedCount++;
+                }
+            });
+            
+            if (claimedCount > 0) {
+                // 報酬を付与
+                collectedStars = Math.min(collectedStars + totalStars, maxStars);
+                collectedDiamonds = Math.min(collectedDiamonds + totalDiamonds, maxDiamonds);
+                updateStarCounter();
+                updateDiamondCounter();
+                saveGameData();
+                updateMissionList();
+                
+                // 効果音を再生
+                playCollectAllSound();
+                
+                // メッセージ表示
+                let message = `${claimedCount}個のミッションを達成！`;
+                if (totalStars > 0) message += ` ⭐${totalStars}`;
+                if (totalDiamonds > 0) message += ` 💎${totalDiamonds}`;
+                showDialogue(message, true);
+            } else {
+                showDialogue('受け取れるミッションがありません', true);
+            }
         }
         
         // ランク表示をタップしてモーダルを開く
@@ -8562,6 +10053,156 @@ generateBackgroundEffect('rainbow');
             }
             backgroundsGrid.appendChild(rainbowBg);
             
+            // ランク報酬のコスモ (Rank 100)
+            const cosmosBg = document.createElement('div');
+            cosmosBg.className = 'reward-item';
+            if (rank >= 100) {
+                if (currentBackground === 'cosmos') cosmosBg.classList.add('active');
+                cosmosBg.innerHTML = `
+                    <div class="reward-icon">💫</div>
+                    <div class="reward-name">コスモ</div>
+                    <div class="reward-unlock">ランク報酬</div>
+                `;
+                cosmosBg.onclick = () => {
+                    currentBackground = 'cosmos';
+                    document.body.className = 'cosmos-bg';
+                    
+            const bgfx = document.getElementById('bgfx');
+            if (bgfx) bgfx.className = document.body.className;
+generateBackgroundEffect('cosmos');
+                    saveGameData();
+                    updateClosetItems();
+                };
+            } else {
+                cosmosBg.classList.add('locked');
+                cosmosBg.innerHTML = `
+                    <div class="reward-icon">💫</div>
+                    <div class="reward-name">コスモ</div>
+                    <div class="reward-locked">Rank 100で解禁</div>
+                `;
+            }
+            backgroundsGrid.appendChild(cosmosBg);
+            
+            // ランク報酬のマトリックス (Rank 200)
+            const matrixBg = document.createElement('div');
+            matrixBg.className = 'reward-item';
+            if (rank >= 200) {
+                if (currentBackground === 'matrix') matrixBg.classList.add('active');
+                matrixBg.innerHTML = `
+                    <div class="reward-icon">🔷</div>
+                    <div class="reward-name">マトリックス</div>
+                    <div class="reward-unlock">ランク報酬</div>
+                `;
+                matrixBg.onclick = () => {
+                    currentBackground = 'matrix';
+                    document.body.className = 'matrix-bg';
+                    
+            const bgfx = document.getElementById('bgfx');
+            if (bgfx) bgfx.className = document.body.className;
+generateBackgroundEffect('matrix');
+                    saveGameData();
+                    updateClosetItems();
+                };
+            } else {
+                matrixBg.classList.add('locked');
+                matrixBg.innerHTML = `
+                    <div class="reward-icon">🔷</div>
+                    <div class="reward-name">マトリックス</div>
+                    <div class="reward-locked">Rank 200で解禁</div>
+                `;
+            }
+            backgroundsGrid.appendChild(matrixBg);
+            
+            // ランク報酬のアクア (Rank 300)
+            const aquaBg = document.createElement('div');
+            aquaBg.className = 'reward-item';
+            if (rank >= 300) {
+                if (currentBackground === 'aqua') aquaBg.classList.add('active');
+                aquaBg.innerHTML = `
+                    <div class="reward-icon">💧</div>
+                    <div class="reward-name">アクア</div>
+                    <div class="reward-unlock">ランク報酬</div>
+                `;
+                aquaBg.onclick = () => {
+                    currentBackground = 'aqua';
+                    document.body.className = 'aqua-bg';
+                    
+            const bgfx = document.getElementById('bgfx');
+            if (bgfx) bgfx.className = document.body.className;
+generateBackgroundEffect('aqua');
+                    saveGameData();
+                    updateClosetItems();
+                };
+            } else {
+                aquaBg.classList.add('locked');
+                aquaBg.innerHTML = `
+                    <div class="reward-icon">💧</div>
+                    <div class="reward-name">アクア</div>
+                    <div class="reward-locked">Rank 300で解禁</div>
+                `;
+            }
+            backgroundsGrid.appendChild(aquaBg);
+            
+            // ランク報酬のメトロポリス (Rank 400)
+            const metroBg = document.createElement('div');
+            metroBg.className = 'reward-item';
+            if (rank >= 400) {
+                if (currentBackground === 'metro') metroBg.classList.add('active');
+                metroBg.innerHTML = `
+                    <div class="reward-icon">🏙️</div>
+                    <div class="reward-name">メトロポリス</div>
+                    <div class="reward-unlock">ランク報酬</div>
+                `;
+                metroBg.onclick = () => {
+                    currentBackground = 'metro';
+                    document.body.className = 'metro-bg';
+                    
+            const bgfx = document.getElementById('bgfx');
+            if (bgfx) bgfx.className = document.body.className;
+generateBackgroundEffect('metro');
+                    saveGameData();
+                    updateClosetItems();
+                };
+            } else {
+                metroBg.classList.add('locked');
+                metroBg.innerHTML = `
+                    <div class="reward-icon">🏙️</div>
+                    <div class="reward-name">メトロポリス</div>
+                    <div class="reward-locked">Rank 400で解禁</div>
+                `;
+            }
+            backgroundsGrid.appendChild(metroBg);
+            
+            // ランク報酬のハッカー (Rank 500)
+            const hackerBg = document.createElement('div');
+            hackerBg.className = 'reward-item';
+            if (rank >= 500) {
+                if (currentBackground === 'hacker') hackerBg.classList.add('active');
+                hackerBg.innerHTML = `
+                    <div class="reward-icon">💻</div>
+                    <div class="reward-name">ハッカー</div>
+                    <div class="reward-unlock">ランク報酬</div>
+                `;
+                hackerBg.onclick = () => {
+                    currentBackground = 'hacker';
+                    document.body.className = 'hacker-bg';
+                    
+            const bgfx = document.getElementById('bgfx');
+            if (bgfx) bgfx.className = document.body.className;
+generateBackgroundEffect('hacker');
+                    saveGameData();
+                    updateClosetItems();
+                };
+            } else {
+                hackerBg.classList.add('locked');
+                hackerBg.innerHTML = `
+                    <div class="reward-icon">💻</div>
+                    <div class="reward-name">ハッカー</div>
+                    <div class="reward-locked">Rank 500で解禁</div>
+                `;
+            }
+            backgroundsGrid.appendChild(hackerBg);
+            
             // ガチャ背景
             gachaBackgrounds.forEach(bg => {
                 const item = document.createElement('div');
@@ -8718,11 +10359,13 @@ generateBackgroundEffect(bg.id);
                 username = newUsername;
                 usernameText.textContent = username;
                 saveGameData();
+                refreshUIFromState();
                 usernameModal.classList.remove('show');
             } else if (newUsername.length === 0) {
                 username = '名前を入力';
                 usernameText.textContent = username;
                 saveGameData();
+                refreshUIFromState();
                 usernameModal.classList.remove('show');
             } else {
                 alert('ユーザーネームは6文字以内で入力してください');
@@ -8759,6 +10402,12 @@ generateBackgroundEffect(bg.id);
                     character.textContent = currentCharacter || '🌚';
                 }
 
+                // デバッグボタンの表示制御
+                const debugBtn = document.getElementById('debug-idle-btn');
+                if (debugBtn) {
+                    debugBtn.style.display = (username === 'テスト') ? 'block' : 'none';
+                }
+
                 if (currentBackground) {
                     document.body.className = currentBackground + '-bg';
                     
@@ -8786,6 +10435,50 @@ generateBackgroundEffect(currentBackground);
         loadGameData();
         refreshUIFromState();
         updateSkillDisplay();
+        updateTitleDisplay();
+        
+        // 放置報酬をチェック
+        checkIdleReward();
+        
+        // 放置報酬の受け取りボタン
+        document.getElementById('claim-idle-reward-btn').addEventListener('click', claimIdleReward);
+        
+        // デバッグボタン（一時的）
+        document.getElementById('debug-idle-btn').addEventListener('click', () => {
+            // ランクを500に設定
+            rank = 500;
+            experience = (rank - 1) * 100; // 経験値も調整
+            updateRankDisplay();
+            
+            // 全称号を解放
+            unlockedTitles = Object.keys(titles);
+            
+            // 全背景を解放
+            if (!unlockedBackgrounds.includes('cosmos')) unlockedBackgrounds.push('cosmos');
+            if (!unlockedBackgrounds.includes('matrix')) unlockedBackgrounds.push('matrix');
+            if (!unlockedBackgrounds.includes('aqua')) unlockedBackgrounds.push('aqua');
+            if (!unlockedBackgrounds.includes('metro')) unlockedBackgrounds.push('metro');
+            if (!unlockedBackgrounds.includes('hacker')) unlockedBackgrounds.push('hacker');
+            
+            saveGameData();
+            showDialogue('🎉 ランク500 & 全称号 & 全特典背景を解放しました！', true);
+            
+            // 放置報酬モーダルも表示
+            showIdleRewardModal(10, 100);
+        });
+        
+        // 称号システムのイベントリスナー
+        document.getElementById('title-display').addEventListener('click', openTitleModal);
+        document.getElementById('close-title-modal-btn').addEventListener('click', () => {
+            document.getElementById('title-modal').style.display = 'none';
+        });
+        
+        // 称号モーダルの外側クリックで閉じる
+        document.getElementById('title-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'title-modal') {
+                document.getElementById('title-modal').style.display = 'none';
+            }
+        });
         
         // スキルアップボタンのイベントリスナー
         document.getElementById('skill-diamond-btn').addEventListener('click', () => upgradeSkill('diamond'));
@@ -8916,6 +10609,13 @@ generateBackgroundEffect(currentBackground);
                 }
             }
         }, 25000);
+        
+        // ページを閉じる時にlastPlayTimeを更新
+        window.addEventListener('beforeunload', () => {
+            lastPlayTime = Date.now();
+            idleRewardClaimed = false;
+            saveGameData();
+        });
     </script>
 
 <script>
@@ -8993,43 +10693,6 @@ generateBackgroundEffect(currentBackground);
     });
 
     apply();
-})();
-</script>
-
-<script>
-/* === Visual viewport height fix (iOS Safari/Chrome address bar) === */
-(function () {
-  function setAppHeight() {
-    // visualViewport is the "actually visible" area on iOS Safari/Chrome
-    const vv = window.visualViewport;
-    const h = vv && vv.height ? vv.height : window.innerHeight;
-
-    // Use px to avoid 100vh/100% mismatch on iOS
-    document.documentElement.style.setProperty('--app-height', h + 'px');
-  }
-
-  // Initial
-  setAppHeight();
-
-  // Update on resize / UI chrome changes
-  window.addEventListener('resize', setAppHeight, { passive: true });
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', setAppHeight, { passive: true });
-    window.visualViewport.addEventListener('scroll', setAppHeight, { passive: true });
-  }
-
-  // iOS sometimes needs a tick after orientation change
-  window.addEventListener('orientationchange', function () {
-    setTimeout(setAppHeight, 50);
-    setTimeout(setAppHeight, 250);
-  }, { passive: true });
-
-  // When returning from background
-  document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) {
-      setTimeout(setAppHeight, 50);
-    }
-  }, { passive: true });
 })();
 </script>
 
