@@ -1,12 +1,17 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>おと〜ふ一生</title>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>おと〜ふ一生</title>
+<style>
         @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
         
+        :root {
+            --vh: 1vh;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,14 +21,15 @@
         
         html, body {
             width: 100%;
-            height: 100%;
             margin: 0;
             padding: 0;
+            height: calc(var(--vh, 1vh) * 100);
+            overflow: hidden;
         }
 
         body {
             font-family: 'M PLUS Rounded 1c', sans-serif;
-            min-height: 100%;
+            height: calc(var(--vh, 1vh) * 100);
             overflow: hidden;
             position: relative;
             transition: background 1s ease;
@@ -32,21 +38,21 @@
         /* Portrait-safe viewport wrapper (prevents sideways layout on Android fullscreen) */
         #viewport {
             position: fixed;
-            inset: 0;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: var(--app-height, 100dvh);
+            height: calc(var(--vh, 1vh) * 100);
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Let the body's background (night-bg / day-bg etc.) show through.
-               Using a solid color here can make the background look "black" on some devices. */
             background: transparent;
         }
 
         #app {
             width: 100%;
             height: 100%;
+            height: calc(var(--vh, 1vh) * 100);
             transform-origin: center center;
             will-change: transform, width, height;
         }
@@ -509,6 +515,7 @@
             position: relative;
             width: 100%;
             height: 100%;
+            height: calc(var(--vh, 1vh) * 100);
         }
         
         #stars {
@@ -1024,8 +1031,8 @@
         #top-ui {
             position: absolute;
             top: calc(20px + env(safe-area-inset-top));
-            left: 20px;
-            right: 20px;
+            left: calc(20px + env(safe-area-inset-left));
+            right: calc(20px + env(safe-area-inset-right));
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -1505,7 +1512,9 @@
         }
         
         #interaction-area {
-            position: absolute;
+            position: fixed;
+            left: 0;
+            right: 0;
             bottom: 0;
             width: 100%;
             padding: 20px;
@@ -3254,8 +3263,6 @@ body.money-bg{
 
 
 :root{
-  --app-height: 100dvh;
-
   --money-bg:
     radial-gradient(120% 90% at 14% 16%, rgba(255,230,165,0.60), transparent 46%),
     radial-gradient(100% 80% at 88% 30%, rgba(255,205,120,0.52), transparent 52%),
@@ -3950,447 +3957,415 @@ body.wine-bg{ background-color:#14040c !important; }
 }
 
 </style>
-
-</head>
+<script>(function () {
+  function setVh() {
+    var h = window.innerHeight;
+    if (window.visualViewport && window.visualViewport.height) {
+      // visualViewport is more accurate on iOS Safari/Chrome when toolbars expand/collapse
+      h = window.visualViewport.height;
+    }
+    document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+  }
+  setVh();
+  window.addEventListener('resize', setVh);
+  window.addEventListener('orientationchange', setVh);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setVh);
+    window.visualViewport.addEventListener('scroll', setVh);
+  }
+})();</script></head>
 <body class="night-bg">
-    <div id="viewport"><div id="app">
-    <div id="game-container">
-        <div id="bgfx"></div>
-        <div id="stars"></div>
-        
-        <button id="settings-btn">⚙️</button>
-        
-        <div id="top-ui">
-            <div id="username-display">
-                <span id="username-text">名前を入力</span>
-            </div>
-
-            <div id="hud-right">
-                <div id="rank-box"><span id="rank-display">Rank 1</span></div>
-                <div id="currency-container">
-                    <div id="diamond-counter">💎 × 0</div>
-                    <div id="star-counter">⭐️ × 0</div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="character-area">
-            <div id="character">🌚</div>
-            <div id="speech-bubble">
-                <div id="speech-text"></div>
-            </div>
-        </div>
-        
-        <!-- 飾りエリア -->
-        <div id="placement-area"></div>
-        
-        <div id="interaction-area">
-            <!-- スキルアップシステム -->
-            
-            <div id="skill-panel">
+<div id="viewport"><div id="app">
+<div id="game-container">
+<div id="bgfx"></div>
+<div id="stars"></div>
+<button id="settings-btn">⚙️</button>
+<div id="top-ui">
+<div id="username-display">
+<span id="username-text">名前を入力</span>
+</div>
+<div id="hud-right">
+<div id="rank-box"><span id="rank-display">Rank 1</span></div>
+<div id="currency-container">
+<div id="diamond-counter">💎 × 0</div>
+<div id="star-counter">⭐️ × 0</div>
+</div>
+</div>
+</div>
+<div id="character-area">
+<div id="character">🌚</div>
+<div id="speech-bubble">
+<div id="speech-text"></div>
+</div>
+</div>
+<!-- 飾りエリア -->
+<div id="placement-area"></div>
+<div id="interaction-area">
+<!-- スキルアップシステム -->
+<div id="skill-panel">
 <div id="skill-system">
-                                <div class="skill-buttons">
-                    <button class="skill-button" id="skill-diamond-btn">
-                        <div class="skill-name">💎スキル</div>
-                        <div class="skill-level">Lv.<span id="skill-diamond-level">0</span>/5</div>
-                    </button>
-                    <button class="skill-button" id="skill-speed-btn">
-                        <div class="skill-name">⭐️スキル</div>
-                        <div class="skill-level">Lv.<span id="skill-speed-level">0</span>/5</div>
-                    </button>
-                    <button class="skill-button" id="skill-bonus-btn">
-                        <div class="skill-name">🎁スキル</div>
-                        <div class="skill-level">Lv.<span id="skill-bonus-level">0</span>/5</div>
-                    </button>
-                </div>
-            </div>
-            </div>
-
-            <div id="skill-toggle-wrap">
-                <button id="skill-toggle-btn" aria-label="スキルパネルを開閉" title="スキル">🔼</button>
-            </div>
-            <div id="button-grid">
-                <button class="action-button" id="pixiv-btn">pixiv⭐️3</button>
-                <button class="action-button mini" id="collect-all-btn">⭐️</button>
-                <button class="action-button" id="mission-btn">ミッション</button>
-                <button class="action-button" id="gacha-btn">ガチャ</button>
-                <button class="action-button" id="shop-btn">ショップ</button>
-                <button class="action-button" id="closet-btn">着せ替え</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- ガチャモーダル -->
-    <div id="gacha-modal">
-        <div id="gacha-content">
-            <div id="gacha-title">おと〜ふガチャ</div>
-            <div style="display: flex; gap: 10px; margin: 20px 0;">
-                <button id="gacha-pull-btn-star" class="gacha-type-btn">
-                    <div>⭐️ガチャ</div>
-                    <div style="font-size: 14px;">⭐️10個</div>
-                </button>
-                <button id="gacha-pull-btn-diamond" class="gacha-type-btn">
-                    <div style="font-size: 12px; color: #ffd700; font-weight: 700; margin-bottom: 2px;">SSR確定</div>
-                    <div>💎ガチャ</div>
-                    <div style="font-size: 14px;">💎1個</div>
-                </button>
-            </div>
-            <div id="gacha-result"></div>
-            <button id="close-gacha-btn">閉じる</button>
-        </div>
-    </div>
-    
-    <!-- 着せ替えモーダル -->
-    <div id="closet-modal">
-        <div id="closet-content">
-            <div id="closet-title">👔 着せ替え</div>
-            
-            <div class="reward-section">
-                <div class="reward-title">🎨 キャラクター</div>
-                <div class="reward-grid" id="closet-characters"></div>
-            </div>
-            
-            <div class="reward-section">
-                <div class="reward-title">🌅 背景</div>
-                <div class="reward-grid" id="closet-backgrounds"></div>
-            </div>
-            
-            <div class="reward-section">
-                <div class="reward-title">🎀 飾り設置</div>
-                <div class="decor-slots-ui">
-                    <button class="decor-slot-btn active" data-slot="0">スロット1</button>
-                    <button class="decor-slot-btn" data-slot="1">スロット2</button>
-                    <button class="decor-slot-btn" data-slot="2">スロット3</button>
-                </div>
-                <div class="decor-items-ui" id="closet-decors"></div>
-                <div class="small-note">※画面上で飾りをドラッグして自由に配置できます</div>
-            </div>
-            
-            <button id="close-closet-btn">閉じる</button>
-        </div>
-    </div>
-    
-    <!-- ユーザーネーム入力モーダル -->
-    <div id="username-modal">
-        <div id="username-modal-content">
-            <div id="username-modal-title">ユーザーネーム設定</div>
-            <input type="text" id="username-input" maxlength="6" placeholder="名前を入力（6文字まで）">
-            <div id="username-char-count">0 / 6</div>
-            <button id="username-save-btn">保存</button>
-            <button id="username-cancel-btn">キャンセル</button>
-        </div>
-    </div>
-    
-    <!-- ランク特典モーダル -->
-    <div id="rank-modal">
-        <div id="rank-modal-content">
-            <div id="rank-modal-title">ランク特典</div>
-            
-            <div class="reward-section">
-                <div class="reward-title">🎨 キャラクター変更</div>
-                <div class="reward-grid">
-                    <div class="reward-item active" data-type="character" data-value="🌚" data-rank="1">
-                        <div class="reward-icon">🌚</div>
-                        <div class="reward-name">おと〜ふ</div>
-                        <div class="reward-unlock">デフォルト</div>
-                    </div>
-                    <div class="reward-item locked" data-type="character" data-value="🐵" data-rank="5">
-                        <div class="reward-icon">🐵</div>
-                        <div class="reward-name">モンキー</div>
-                        <div class="reward-locked">Rank 5で解禁</div>
-                    </div>
-                    <div class="reward-item locked" data-type="character" data-value="🤡" data-rank="10">
-                        <div class="reward-icon">🤡</div>
-                        <div class="reward-name">ピエロ</div>
-                        <div class="reward-locked">Rank 10で解禁</div>
-                    </div>
-                    <div class="reward-item locked" data-type="character" data-value="🌝" data-rank="20">
-                        <div class="reward-icon">🌝</div>
-                        <div class="reward-name">ムーン</div>
-                        <div class="reward-locked">Rank 20で解禁</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="reward-section">
-                <div class="reward-title">🌅 背景変更</div>
-                <div class="reward-grid">
-                    <div class="reward-item active" data-type="background" data-value="night" data-rank="1">
-                        <div class="reward-icon">🌙</div>
-                        <div class="reward-name">夜空</div>
-                        <div class="reward-unlock">デフォルト</div>
-                    </div>
-                    <div class="reward-item locked" data-type="background" data-value="city" data-rank="15">
-                        <div class="reward-icon">🌆</div>
-                        <div class="reward-name">夕暮れ</div>
-                        <div class="reward-locked">Rank 15で解禁</div>
-                    </div>
-                    <div class="reward-item locked" data-type="background" data-value="rainbow" data-rank="20">
-                        <div class="reward-icon">🌈</div>
-                        <div class="reward-name">虹</div>
-                        <div class="reward-locked">Rank 20で解禁</div>
-                    </div>
-                </div>
-            </div>
-            
-            <button id="close-modal-btn">閉じる</button>
-        </div>
-    </div>
-    
-    <!-- ミッションモーダル -->
-    <div id="mission-modal">
-        <div id="mission-modal-content">
-            <div id="mission-modal-title">ミッション</div>
-            <div id="mission-list"></div>
-            <button id="close-mission-btn">閉じる</button>
-        </div>
-    </div>
-    
-    <!-- 設定モーダル -->
-    <div id="settings-modal">
-        <div id="settings-modal-content">
-            <div id="settings-modal-title">⚙️ 設定</div>
-            
-            <div class="settings-section">
-                <div class="settings-section-title">🔊 音量調整</div>
-                
-            <div class="settings-section">
-                
-                <div class="settings-section-title">🎵 BGM</div>
-                <div class="bgm-dropdown">
-                    <button class="bgm-current" id="bgmCurrentBtn" type="button">
-                        <span class="bgm-current-label" id="bgmCurrentLabel">デフォルト</span>
-                        <span class="bgm-current-caret">▾</span>
-                    </button>
-                    <div class="bgm-list" id="bgmList" aria-hidden="true">
-                        <button class="bgm-item" data-bgm="default" type="button">デフォルト</button>
-                        <button class="bgm-item" data-bgm="bgm2" type="button">BGM2</button>
-                        <button class="bgm-item" data-bgm="bgm3" type="button">BGM3</button>
-                        <button class="bgm-item" data-bgm="bgm4" type="button">BGM4</button>
-                        <button class="bgm-item" data-bgm="off" type="button">オフ</button>
-                    </div>
-                </div>
-            </div>
-            
+<div class="skill-buttons">
+<button class="skill-button" id="skill-diamond-btn">
+<div class="skill-name">💎スキル</div>
+<div class="skill-level">Lv.<span id="skill-diamond-level">0</span>/5</div>
+</button>
+<button class="skill-button" id="skill-speed-btn">
+<div class="skill-name">⭐️スキル</div>
+<div class="skill-level">Lv.<span id="skill-speed-level">0</span>/5</div>
+</button>
+<button class="skill-button" id="skill-bonus-btn">
+<div class="skill-name">🎁スキル</div>
+<div class="skill-level">Lv.<span id="skill-bonus-level">0</span>/5</div>
+</button>
+</div>
+</div>
+</div>
+<div id="skill-toggle-wrap">
+<button aria-label="スキルパネルを開閉" id="skill-toggle-btn" title="スキル">🔼</button>
+</div>
+<div id="button-grid">
+<button class="action-button" id="pixiv-btn">pixiv⭐️3</button>
+<button class="action-button mini" id="collect-all-btn">⭐️</button>
+<button class="action-button" id="mission-btn">ミッション</button>
+<button class="action-button" id="gacha-btn">ガチャ</button>
+<button class="action-button" id="shop-btn">ショップ</button>
+<button class="action-button" id="closet-btn">着せ替え</button>
+</div>
+</div>
+</div>
+<!-- ガチャモーダル -->
+<div id="gacha-modal">
+<div id="gacha-content">
+<div id="gacha-title">おと〜ふガチャ</div>
+<div style="display: flex; gap: 10px; margin: 20px 0;">
+<button class="gacha-type-btn" id="gacha-pull-btn-star">
+<div>⭐️ガチャ</div>
+<div style="font-size: 14px;">⭐️10個</div>
+</button>
+<button class="gacha-type-btn" id="gacha-pull-btn-diamond">
+<div style="font-size: 12px; color: #ffd700; font-weight: 700; margin-bottom: 2px;">SSR確定</div>
+<div>💎ガチャ</div>
+<div style="font-size: 14px;">💎1個</div>
+</button>
+</div>
+<div id="gacha-result"></div>
+<button id="close-gacha-btn">閉じる</button>
+</div>
+</div>
+<!-- 着せ替えモーダル -->
+<div id="closet-modal">
+<div id="closet-content">
+<div id="closet-title">👔 着せ替え</div>
+<div class="reward-section">
+<div class="reward-title">🎨 キャラクター</div>
+<div class="reward-grid" id="closet-characters"></div>
+</div>
+<div class="reward-section">
+<div class="reward-title">🌅 背景</div>
+<div class="reward-grid" id="closet-backgrounds"></div>
+</div>
+<div class="reward-section">
+<div class="reward-title">🎀 飾り設置</div>
+<div class="decor-slots-ui">
+<button class="decor-slot-btn active" data-slot="0">スロット1</button>
+<button class="decor-slot-btn" data-slot="1">スロット2</button>
+<button class="decor-slot-btn" data-slot="2">スロット3</button>
+</div>
+<div class="decor-items-ui" id="closet-decors"></div>
+<div class="small-note">※画面上で飾りをドラッグして自由に配置できます</div>
+</div>
+<button id="close-closet-btn">閉じる</button>
+</div>
+</div>
+<!-- ユーザーネーム入力モーダル -->
+<div id="username-modal">
+<div id="username-modal-content">
+<div id="username-modal-title">ユーザーネーム設定</div>
+<input id="username-input" maxlength="6" placeholder="名前を入力（6文字まで）" type="text"/>
+<div id="username-char-count">0 / 6</div>
+<button id="username-save-btn">保存</button>
+<button id="username-cancel-btn">キャンセル</button>
+</div>
+</div>
+<!-- ランク特典モーダル -->
+<div id="rank-modal">
+<div id="rank-modal-content">
+<div id="rank-modal-title">ランク特典</div>
+<div class="reward-section">
+<div class="reward-title">🎨 キャラクター変更</div>
+<div class="reward-grid">
+<div class="reward-item active" data-rank="1" data-type="character" data-value="🌚">
+<div class="reward-icon">🌚</div>
+<div class="reward-name">おと〜ふ</div>
+<div class="reward-unlock">デフォルト</div>
+</div>
+<div class="reward-item locked" data-rank="5" data-type="character" data-value="🐵">
+<div class="reward-icon">🐵</div>
+<div class="reward-name">モンキー</div>
+<div class="reward-locked">Rank 5で解禁</div>
+</div>
+<div class="reward-item locked" data-rank="10" data-type="character" data-value="🤡">
+<div class="reward-icon">🤡</div>
+<div class="reward-name">ピエロ</div>
+<div class="reward-locked">Rank 10で解禁</div>
+</div>
+<div class="reward-item locked" data-rank="20" data-type="character" data-value="🌝">
+<div class="reward-icon">🌝</div>
+<div class="reward-name">ムーン</div>
+<div class="reward-locked">Rank 20で解禁</div>
+</div>
+</div>
+</div>
+<div class="reward-section">
+<div class="reward-title">🌅 背景変更</div>
+<div class="reward-grid">
+<div class="reward-item active" data-rank="1" data-type="background" data-value="night">
+<div class="reward-icon">🌙</div>
+<div class="reward-name">夜空</div>
+<div class="reward-unlock">デフォルト</div>
+</div>
+<div class="reward-item locked" data-rank="15" data-type="background" data-value="city">
+<div class="reward-icon">🌆</div>
+<div class="reward-name">夕暮れ</div>
+<div class="reward-locked">Rank 15で解禁</div>
+</div>
+<div class="reward-item locked" data-rank="20" data-type="background" data-value="rainbow">
+<div class="reward-icon">🌈</div>
+<div class="reward-name">虹</div>
+<div class="reward-locked">Rank 20で解禁</div>
+</div>
+</div>
+</div>
+<button id="close-modal-btn">閉じる</button>
+</div>
+</div>
+<!-- ミッションモーダル -->
+<div id="mission-modal">
+<div id="mission-modal-content">
+<div id="mission-modal-title">ミッション</div>
+<div id="mission-list"></div>
+<button id="close-mission-btn">閉じる</button>
+</div>
+</div>
+<!-- 設定モーダル -->
+<div id="settings-modal">
+<div id="settings-modal-content">
+<div id="settings-modal-title">⚙️ 設定</div>
+<div class="settings-section">
+<div class="settings-section-title">🔊 音量調整</div>
+<div class="settings-section">
+<div class="settings-section-title">🎵 BGM</div>
+<div class="bgm-dropdown">
+<button class="bgm-current" id="bgmCurrentBtn" type="button">
+<span class="bgm-current-label" id="bgmCurrentLabel">デフォルト</span>
+<span class="bgm-current-caret">▾</span>
+</button>
+<div aria-hidden="true" class="bgm-list" id="bgmList">
+<button class="bgm-item" data-bgm="default" type="button">デフォルト</button>
+<button class="bgm-item" data-bgm="bgm2" type="button">BGM2</button>
+<button class="bgm-item" data-bgm="bgm3" type="button">BGM3</button>
+<button class="bgm-item" data-bgm="bgm4" type="button">BGM4</button>
+<button class="bgm-item" data-bgm="off" type="button">オフ</button>
+</div>
+</div>
+</div>
 <div class="volume-control">
-                    <label>BGM</label>
-                    <input type="range" id="bgm-volume" min="0" max="100" value="15">
-                    <span id="bgm-volume-text">15%</span>
-                </div>
-                <div class="volume-control">
-                    <label>効果音</label>
-                    <input type="range" id="se-volume" min="0" max="100" value="100">
-                    <span id="se-volume-text">100%</span>
-                </div>
-            </div>
-            
-            <div class="settings-section">
-                <div class="settings-section-title">💾 セーブデータ</div>
-                <div class="save-buttons">
-                    <button id="export-save-btn">📤 書き出す</button>
-                    <button id="import-save-btn">📥 取り込む</button>
-                </div>
-                <textarea id="save-textarea" placeholder="セーブデータがここに表示されます"></textarea>
-                <div class="save-note">※ セーブデータを書き出して保存しておけば、ゲームファイルを更新しても引き継げます</div>
-            </div>
-            
-            <div class="settings-section">
-                <div class="settings-section-title">🎁 シリアルコード</div>
-                <div class="serial-input-container">
-                    <input type="text" id="serial-input" placeholder="シリアルコードを入力">
-                    <button id="serial-submit-btn">適用</button>
-                </div>
-                <div id="serial-message"></div>
-            </div>
-            
-            <button id="close-settings-btn">閉じる</button>
-        </div>
-    </div>
-
-    <!-- ショップモーダル -->
-    <div id="shop-modal">
-        <div id="shop-modal-content">
-            <div id="shop-modal-title">🛒 ショップ</div>
-            
-            <div class="shop-section">
-                <div class="shop-section-title">💎 ダイヤに交換</div>
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">💎</div>
-                        <div>
-                            <div class="shop-item-name">ダイヤ × 1</div>
-                            <div class="shop-item-price">⭐️ 30個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-diamond-btn">購入</button>
-                </div>
-            </div>
-            
-            <div class="shop-section">
-                <div class="shop-section-title">🎭 キャラクター</div>
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">😎</div>
-                        <div>
-                            <div class="shop-item-name">クール</div>
-                            <div class="shop-item-price">⭐️ 100個</div>
-                            <div class="shop-item-note">星: 🤘🍾</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-cool-btn">購入</button>
-                </div>
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">🦄</div>
-                        <div>
-                            <div class="shop-item-name">ユニコーン</div>
-                            <div class="shop-item-price">💎 10個</div>
-                            <div class="shop-item-note">星: 🗡️🛡️</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-unicorn-btn">購入</button>
-                </div>
-            </div>
-            
-            <div class="shop-section">
-                <div class="shop-section-title">🌅 背景</div>
-                
-                <!-- ⭐️スターで購入 -->
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">💰</div>
-                        <div>
-                            <div class="shop-item-name">マネー</div>
-                            <div class="shop-item-price">⭐️ 200個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-money-bg-btn">購入</button>
-                </div>
-
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">🦋</div>
-                        <div>
-                            <div class="shop-item-name">モルフォ蝶</div>
-                            <div class="shop-item-price">⭐ 200個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-morpho-bg-btn">購入</button>
-                </div>
-
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">🍟</div>
-                        <div>
-                            <div class="shop-item-name">ポテト</div>
-                            <div class="shop-item-price">⭐ 200個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-fries-bg-btn">購入</button>
-                </div>
-
-                <!-- 💎ダイヤで購入 -->
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">🥂</div>
-                        <div>
-                            <div class="shop-item-name">シャンパン</div>
-                            <div class="shop-item-price">💎 20個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-champagne-bg-btn">購入</button>
-                </div>
-
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">🪩</div>
-                        <div>
-                            <div class="shop-item-name">ミラーボール</div>
-                            <div class="shop-item-price">💎 20個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-disco-bg-btn">購入</button>
-                </div>
-
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">🏝️</div>
-                        <div>
-                            <div class="shop-item-name">海</div>
-                            <div class="shop-item-price">💎 20個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-sea-bg-btn">購入</button>
-                </div>
-
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">💍</div>
-                        <div>
-                            <div class="shop-item-name">ジュエル</div>
-                            <div class="shop-item-price">💎 20個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-jewel-bg-btn">購入</button>
-                </div>
-
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">🃏</div>
-                        <div>
-                            <div class="shop-item-name">トランプ</div>
-                            <div class="shop-item-price">💎 20個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-cards-bg-btn">購入</button>
-                </div>
-
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">🍬</div>
-                        <div>
-                            <div class="shop-item-name">ネオン</div>
-                            <div class="shop-item-price">💎 20個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-neoncandy-bg-btn">購入</button>
-                </div>
-
-                <div class="shop-item">
-                    <div class="shop-item-info">
-                        <div class="shop-item-icon">🎲</div>
-                        <div>
-                            <div class="shop-item-name">ランダム</div>
-                            <div class="shop-item-price">💎 20個</div>
-                        </div>
-                    </div>
-                    <button class="shop-buy-btn" id="buy-dice-bg-btn">購入</button>
-                </div>
-
-            </div>
-            
-            <button id="close-shop-btn">閉じる</button>
-        </div>
-    </div>
-
-    <!-- 購入確認モーダル -->
-    <div id="confirm-modal">
-        <div id="confirm-modal-content">
-            <div id="confirm-modal-title">購入確認</div>
-            <div id="confirm-modal-message"></div>
-            <div id="confirm-modal-buttons">
-                <button id="confirm-yes-btn" class="confirm-btn">はい</button>
-                <button id="confirm-no-btn" class="confirm-btn">いいえ</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- BGM -->
-    <audio id="bgm" loop>
-        <source src="orb2.mp3" type="audio/mpeg">
-    </audio>
-
-    <script>
+<label>BGM</label>
+<input id="bgm-volume" max="100" min="0" type="range" value="15"/>
+<span id="bgm-volume-text">15%</span>
+</div>
+<div class="volume-control">
+<label>効果音</label>
+<input id="se-volume" max="100" min="0" type="range" value="100"/>
+<span id="se-volume-text">100%</span>
+</div>
+</div>
+<div class="settings-section">
+<div class="settings-section-title">💾 セーブデータ</div>
+<div class="save-buttons">
+<button id="export-save-btn">📤 書き出す</button>
+<button id="import-save-btn">📥 取り込む</button>
+</div>
+<textarea id="save-textarea" placeholder="セーブデータがここに表示されます"></textarea>
+<div class="save-note">※ セーブデータを書き出して保存しておけば、ゲームファイルを更新しても引き継げます</div>
+</div>
+<div class="settings-section">
+<div class="settings-section-title">🎁 シリアルコード</div>
+<div class="serial-input-container">
+<input id="serial-input" placeholder="シリアルコードを入力" type="text"/>
+<button id="serial-submit-btn">適用</button>
+</div>
+<div id="serial-message"></div>
+</div>
+<button id="close-settings-btn">閉じる</button>
+</div>
+</div>
+<!-- ショップモーダル -->
+<div id="shop-modal">
+<div id="shop-modal-content">
+<div id="shop-modal-title">🛒 ショップ</div>
+<div class="shop-section">
+<div class="shop-section-title">💎 ダイヤに交換</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">💎</div>
+<div>
+<div class="shop-item-name">ダイヤ × 1</div>
+<div class="shop-item-price">⭐️ 30個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-diamond-btn">購入</button>
+</div>
+</div>
+<div class="shop-section">
+<div class="shop-section-title">🎭 キャラクター</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">😎</div>
+<div>
+<div class="shop-item-name">クール</div>
+<div class="shop-item-price">⭐️ 100個</div>
+<div class="shop-item-note">星: 🤘🍾</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-cool-btn">購入</button>
+</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">🦄</div>
+<div>
+<div class="shop-item-name">ユニコーン</div>
+<div class="shop-item-price">💎 10個</div>
+<div class="shop-item-note">星: 🗡️🛡️</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-unicorn-btn">購入</button>
+</div>
+</div>
+<div class="shop-section">
+<div class="shop-section-title">🌅 背景</div>
+<!-- ⭐️スターで購入 -->
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">💰</div>
+<div>
+<div class="shop-item-name">マネー</div>
+<div class="shop-item-price">⭐️ 200個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-money-bg-btn">購入</button>
+</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">🦋</div>
+<div>
+<div class="shop-item-name">モルフォ蝶</div>
+<div class="shop-item-price">⭐ 200個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-morpho-bg-btn">購入</button>
+</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">🍟</div>
+<div>
+<div class="shop-item-name">ポテト</div>
+<div class="shop-item-price">⭐ 200個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-fries-bg-btn">購入</button>
+</div>
+<!-- 💎ダイヤで購入 -->
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">🥂</div>
+<div>
+<div class="shop-item-name">シャンパン</div>
+<div class="shop-item-price">💎 20個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-champagne-bg-btn">購入</button>
+</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">🪩</div>
+<div>
+<div class="shop-item-name">ミラーボール</div>
+<div class="shop-item-price">💎 20個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-disco-bg-btn">購入</button>
+</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">🏝️</div>
+<div>
+<div class="shop-item-name">海</div>
+<div class="shop-item-price">💎 20個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-sea-bg-btn">購入</button>
+</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">💍</div>
+<div>
+<div class="shop-item-name">ジュエル</div>
+<div class="shop-item-price">💎 20個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-jewel-bg-btn">購入</button>
+</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">🃏</div>
+<div>
+<div class="shop-item-name">トランプ</div>
+<div class="shop-item-price">💎 20個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-cards-bg-btn">購入</button>
+</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">🍬</div>
+<div>
+<div class="shop-item-name">ネオン</div>
+<div class="shop-item-price">💎 20個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-neoncandy-bg-btn">購入</button>
+</div>
+<div class="shop-item">
+<div class="shop-item-info">
+<div class="shop-item-icon">🎲</div>
+<div>
+<div class="shop-item-name">ランダム</div>
+<div class="shop-item-price">💎 20個</div>
+</div>
+</div>
+<button class="shop-buy-btn" id="buy-dice-bg-btn">購入</button>
+</div>
+</div>
+<button id="close-shop-btn">閉じる</button>
+</div>
+</div>
+<!-- 購入確認モーダル -->
+<div id="confirm-modal">
+<div id="confirm-modal-content">
+<div id="confirm-modal-title">購入確認</div>
+<div id="confirm-modal-message"></div>
+<div id="confirm-modal-buttons">
+<button class="confirm-btn" id="confirm-yes-btn">はい</button>
+<button class="confirm-btn" id="confirm-no-btn">いいえ</button>
+</div>
+</div>
+</div>
+<!-- BGM -->
+<audio id="bgm" loop="">
+<source src="orb2.mp3" type="audio/mpeg"/>
+</audio>
+<script>
 
 // クリック前の自動再生制限で止まらないようにガード
 function safePlay(audioEl){
@@ -8917,7 +8892,6 @@ generateBackgroundEffect(currentBackground);
             }
         }, 25000);
     </script>
-
 <script>
 /* === Portrait viewport fix (Android fullscreen / landscape issues) === */
 (function () {
@@ -8967,8 +8941,6 @@ generateBackgroundEffect(currentBackground);
   });
 })();
 </script>
-
-
 <script>
 (function(){
     const panel = document.getElementById('skill-panel');
@@ -8995,43 +8967,5 @@ generateBackgroundEffect(currentBackground);
     apply();
 })();
 </script>
-
-<script>
-/* === Visual viewport height fix (iOS Safari/Chrome address bar) === */
-(function () {
-  function setAppHeight() {
-    // visualViewport is the "actually visible" area on iOS Safari/Chrome
-    const vv = window.visualViewport;
-    const h = vv && vv.height ? vv.height : window.innerHeight;
-
-    // Use px to avoid 100vh/100% mismatch on iOS
-    document.documentElement.style.setProperty('--app-height', h + 'px');
-  }
-
-  // Initial
-  setAppHeight();
-
-  // Update on resize / UI chrome changes
-  window.addEventListener('resize', setAppHeight, { passive: true });
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', setAppHeight, { passive: true });
-    window.visualViewport.addEventListener('scroll', setAppHeight, { passive: true });
-  }
-
-  // iOS sometimes needs a tick after orientation change
-  window.addEventListener('orientationchange', function () {
-    setTimeout(setAppHeight, 50);
-    setTimeout(setAppHeight, 250);
-  }, { passive: true });
-
-  // When returning from background
-  document.addEventListener('visibilitychange', function () {
-    if (!document.hidden) {
-      setTimeout(setAppHeight, 50);
-    }
-  }, { passive: true });
-})();
-</script>
-
-</body>
+</div></div></body>
 </html>
