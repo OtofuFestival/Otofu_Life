@@ -5403,6 +5403,9 @@ const safeStorage = (() => {
         let maxStars = 999;
         let lastStarRegenTime = Date.now();
         let collectibleStarsArray = [];
+        let collectedStarIds = []; // 回収済み星のID記録（リロード対策）
+        let starIdCounter = 0; // 星のユニークID生成用
+        let lastStarSpawnTime = 0; // 最後に星を生成した時刻
 
 let bonusMoonActive = false;
         let lastBonusMoonTime = 0;
@@ -5411,7 +5414,7 @@ let bonusMoonActive = false;
         
         // ダイヤシステム
         let collectedDiamonds = 0;
-        let maxDiamonds = 99;
+        let maxDiamonds = 999;
         let diamondSpawnedToday = 0; // 今日出現したダイヤの数
         let lastDiamondSpawnDate = null;
         
@@ -6664,7 +6667,9 @@ function spawnFloatingCircles(opts) {
                 data.idleRewardClaimed,
                 data.currentTitle,
                 data.unlockedTitles,
-                data.titleProgress
+                data.titleProgress,
+                data.collectedStarIds || [],
+                data.lastStarSpawnTime || 0
             ];
             
             // JSON文字列化してLZString圧縮（EncodedURIComponentはBase64より短い）
@@ -6738,7 +6743,9 @@ function spawnFloatingCircles(opts) {
                 idleRewardClaimed: arr[27],
                 currentTitle: arr[28],
                 unlockedTitles: arr[29],
-                titleProgress: arr[30]
+                titleProgress: arr[30],
+                collectedStarIds: arr[31] || [],
+                lastStarSpawnTime: arr[32] || 0
             };
         }
         
@@ -6780,6 +6787,8 @@ function spawnFloatingCircles(opts) {
                     currentTitle = data.currentTitle || 'newcomer';
                     unlockedTitles = data.unlockedTitles || ['newcomer'];
                     titleProgress = data.titleProgress || { pixivCount: 0, talkCount: 0, shopPurchaseCount: 0, totalDiamonds: 0, totalStars: 0 };
+                    collectedStarIds = data.collectedStarIds || [];
+                    lastStarSpawnTime = data.lastStarSpawnTime || 0;
                 } catch (e) {
                     // デコード失敗時は初期化
                     initializeDefaultData();
@@ -6935,7 +6944,9 @@ function spawnFloatingCircles(opts) {
                 idleRewardClaimed: idleRewardClaimed,
                 currentTitle: currentTitle,
                 unlockedTitles: unlockedTitles,
-                titleProgress: titleProgress
+                titleProgress: titleProgress,
+                collectedStarIds: collectedStarIds,
+                lastStarSpawnTime: lastStarSpawnTime
             };
             
             // エンコードして保存
@@ -7107,9 +7118,12 @@ function spawnFloatingCircles(opts) {
             if (activeStars >= 10) return;
 
             
-            
             const star = document.createElement('div');
             star.className = 'collectible-star';
+            
+            // ユニークIDを付与
+            const starId = `star_${Date.now()}_${starIdCounter++}`;
+            star.dataset.starId = starId;
             
             // ダイヤの出現判定：1日の上限はskillDiamondLevelに応じて増加（基本1 + スキルレベル）
             const maxDiamondsPerDay = 1 + skillDiamondLevel;
@@ -7212,6 +7226,9 @@ function spawnFloatingCircles(opts) {
             
             characterArea.appendChild(star);
             collectibleStarsArray.push(star);
+            
+            // 生成時刻を記録
+            lastStarSpawnTime = Date.now();
 }
         
         // 星を回収
@@ -7220,6 +7237,10 @@ function spawnFloatingCircles(opts) {
             if (starElement.classList.contains('collected')) return;
             
             const isDiamond = starElement.dataset.isDiamond === 'true';
+            const starId = starElement.dataset.starId;
+            
+            // 既に回収済みかチェック
+            if (starId && collectedStarIds.includes(starId)) return;
             
             if (isDiamond) {
                 // ダイヤを回収
@@ -7227,9 +7248,13 @@ function spawnFloatingCircles(opts) {
                 starElement.classList.add('collected');
                 collectedDiamonds++;
                 titleProgress.totalDiamonds++;
+                
+                // IDを記録
+                if (starId) collectedStarIds.push(starId);
+                
                 updateDiamondCounter();
                 addExperience(10);
-                saveGameData();
+                saveGameData(); // 即座に保存
                 playStarSound();
                 checkTitleUnlocks();
             } else {
@@ -7238,9 +7263,13 @@ function spawnFloatingCircles(opts) {
                 starElement.classList.add('collected');
                 collectedStars++;
                 titleProgress.totalStars++;
+                
+                // IDを記録
+                if (starId) collectedStarIds.push(starId);
+                
                 updateStarCounter();
                 addExperience(5);
-                saveGameData();
+                saveGameData(); // 即座に保存
                 playStarSound();
                 checkTitleUnlocks();
             }
@@ -10599,9 +10628,16 @@ generateBackgroundEffect(currentBackground);
             }
         });
         
-        // 初期の星を生成
-        for (let i = 0; i < 5; i++) {
-            spawnCollectibleStars();
+        // 初期の星を生成（最後の生成から30秒以上経過している場合のみ）
+        const timeSinceLastSpawn = Date.now() - lastStarSpawnTime;
+        const minSpawnInterval = 30000; // 30秒
+        
+        if (timeSinceLastSpawn >= minSpawnInterval) {
+            const currentStarCount = document.querySelectorAll('.collectible-star').length;
+            const initialStarCount = Math.max(0, 3 - currentStarCount);
+            for (let i = 0; i < initialStarCount; i++) {
+                spawnCollectibleStars();
+            }
         }
         
         // 初回の星ポップアップ間隔設定
@@ -10626,6 +10662,12 @@ generateBackgroundEffect(currentBackground);
                 spawnBonusGift();
             }
         }, 60000); // 1分ごとにチェック
+        
+        // 1時間ごとにcollectedStarIdsをクリア（メモリ節約）
+        setInterval(() => {
+            collectedStarIds = [];
+            saveGameData();
+        }, 3600000); // 1時間
         
         // 定期的にランダムセリフ
         setInterval(() => {
