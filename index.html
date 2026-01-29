@@ -3459,6 +3459,25 @@ html, body { height: 100%; }
     overflow: hidden;
     box-shadow: 0 0 40px rgba(0,0,0,0.5);
   }
+  
+  /* PC用UIサイズ調整 */
+  #title-display {
+    font-size: 14px !important;
+    padding: 6px 12px !important;
+    max-width: 200px !important;
+  }
+  
+  #username-display {
+    font-size: 18px !important;
+    padding: 10px 16px !important;
+    max-width: 250px !important;
+  }
+  
+  #rank-box {
+    font-size: 18px !important;
+    padding: 10px 16px !important;
+    max-width: 200px !important;
+  }
 }
 @media (max-width: 767px) {
   #app{
@@ -6954,8 +6973,26 @@ function spawnFloatingCircles(opts) {
                 updateRankDisplay();
                 showDialogue(`ランクアップ！Rank ${rank} になった🎉`, true);
                 
+                // ランク報酬でキャラを解放
+                if (rank === 5 && !unlockedCharacters.includes('🐵')) {
+                    unlockedCharacters.push('🐵');
+                    showDialogue('新しいキャラ「サル」を手に入れた！🐵', true);
+                } else if (rank === 10 && !unlockedCharacters.includes('🤡')) {
+                    unlockedCharacters.push('🤡');
+                    showDialogue('新しいキャラ「ピエロ」を手に入れた！🤡', true);
+                } else if (rank === 20 && !unlockedCharacters.includes('🌝')) {
+                    unlockedCharacters.push('🌝');
+                    showDialogue('新しいキャラ「ムーン」を手に入れた！🌝', true);
+                }
+                
                 // ランク報酬で背景を解放
-                if (rank === 100 && !unlockedBackgrounds.includes('cosmos')) {
+                if (rank === 15 && !unlockedBackgrounds.includes('city')) {
+                    unlockedBackgrounds.push('city');
+                    showDialogue('新しい背景「シティ」を手に入れた！🌃', true);
+                } else if (rank === 20 && !unlockedBackgrounds.includes('rainbow')) {
+                    unlockedBackgrounds.push('rainbow');
+                    showDialogue('新しい背景「レインボー」を手に入れた！🌈', true);
+                } else if (rank === 100 && !unlockedBackgrounds.includes('cosmos')) {
                     unlockedBackgrounds.push('cosmos');
                     showDialogue('新しい背景「コスモ」を手に入れた！💫', true);
                 } else if (rank === 200 && !unlockedBackgrounds.includes('matrix')) {
@@ -6971,6 +7008,9 @@ function spawnFloatingCircles(opts) {
                     unlockedBackgrounds.push('hacker');
                     showDialogue('新しい背景「ハッカー」を手に入れた！💻', true);
                 }
+                
+                // 称号チェック
+                checkTitleUnlocks();
             }
             
             saveGameData();
@@ -10425,6 +10465,13 @@ generateBackgroundEffect(currentBackground);
         
         // デバッグボタン（一時的）
         document.getElementById('debug-idle-btn').addEventListener('click', () => {
+            // キャラ数をconsole.logで確認
+            console.log('=== キャラ所持数デバッグ ===');
+            console.log('unlockedCharacters:', unlockedCharacters);
+            console.log('所持数:', unlockedCharacters.length);
+            console.log('魔王称号条件: 15個以上');
+            console.log('条件達成:', unlockedCharacters.length >= 15 ? 'はい' : 'いいえ');
+            
             // ランクを500に設定
             rank = 500;
             experience = (rank - 1) * 100; // 経験値も調整
@@ -10441,7 +10488,7 @@ generateBackgroundEffect(currentBackground);
             if (!unlockedBackgrounds.includes('hacker')) unlockedBackgrounds.push('hacker');
             
             saveGameData();
-            showDialogue('🎉 ランク500 & 全称号 & 全特典背景を解放しました！', true);
+            showDialogue('🎉 ランク500 & 全称号 & 全特典背景を解放しました！ (コンソールでキャラ数を確認)', true);
             
             // 放置報酬モーダルも表示
             showIdleRewardModal(10, 100);
