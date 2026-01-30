@@ -7337,9 +7337,11 @@ function spawnFloatingCircles(opts) {
             // 星を20個追加（最大値を超えない）
             const starsToAdd = Math.min(20, maxStars - collectedStars);
             collectedStars += starsToAdd;
+            titleProgress.totalStars += starsToAdd; // 合計にも加算
             updateStarCounter();
             addExperience(25);
             saveGameData();
+            checkTitleUnlocks(); // 称号チェック
             
             playStarSound();
             
@@ -8137,12 +8139,14 @@ collectedStars -= cost;
             
             // 報酬を付与
             collectedStars = Math.min(collectedStars + rewardStars, maxStars);
+            titleProgress.totalStars += rewardStars; // 合計にも加算
             updateStarCounter();
             
             // 報酬受け取り済みにする
             idleRewardClaimed = true;
             lastPlayTime = Date.now();
             saveGameData();
+            checkTitleUnlocks(); // 称号チェック
             
             // モーダルを閉じる
             modal.style.display = 'none';
@@ -9001,9 +9005,11 @@ function hideConfirmModal() {
                         playActionSound();
                         collectedStars -= 30;
                         collectedDiamonds += 1;
+                        titleProgress.totalDiamonds += 1; // 合計にも加算
                         updateStarCounter();
                         updateDiamondCounter();
                         saveGameData();
+                        checkTitleUnlocks(); // 称号チェック
                         updateShopButtons();
                         showDialogue('ダイヤを1個購入した！💎', true);
                     }
@@ -9025,6 +9031,7 @@ function hideConfirmModal() {
                             unlockedCharacters.push('😎');
                             updateStarCounter();
                             saveGameData();
+                            checkTitleUnlocks(); // 称号チェック
                             updateShopButtons();
                             showDialogue('😎 クールを購入した！', true);
                         }
@@ -9047,6 +9054,7 @@ function hideConfirmModal() {
                             unlockedCharacters.push('🦄');
                             updateDiamondCounter();
                             saveGameData();
+                            checkTitleUnlocks(); // 称号チェック
                             updateShopButtons();
                             showDialogue('🦄 ユニコーンを購入した！', true);
                         }
@@ -9300,9 +9308,15 @@ function hideConfirmModal() {
                 // 報酬を付与
                 collectedStars = Math.min(collectedStars + totalStars, maxStars);
                 collectedDiamonds = Math.min(collectedDiamonds + totalDiamonds, maxDiamonds);
+                
+                // 合計にも加算
+                titleProgress.totalStars += totalStars;
+                titleProgress.totalDiamonds += totalDiamonds;
+                
                 updateStarCounter();
                 updateDiamondCounter();
                 saveGameData();
+                checkTitleUnlocks(); // 称号チェック
                 updateMissionList();
                 
                 // 効果音を再生
@@ -9572,12 +9586,14 @@ generateBackgroundEffect(value);
                     unlockedCharacters.push(item.emoji);
                 }
                 saveGameData();
+                checkTitleUnlocks(); // 称号チェック
                 return { type: type, item: item, isNew: !wasOwned };
             } else if (type === 'background') {
                 if (!unlockedBackgrounds.includes(item.id)) {
                     unlockedBackgrounds.push(item.id);
                 }
                 saveGameData();
+                checkTitleUnlocks(); // 称号チェック
                 return { type: type, item: item, isNew: !wasOwned };
             } else if (type === 'decor') {
                 if (!ownedDecor[item.emoji]) {
@@ -9645,12 +9661,14 @@ generateBackgroundEffect(value);
                     unlockedCharacters.push(item.emoji);
                 }
                 saveGameData();
+                checkTitleUnlocks(); // 称号チェック
                 return { type: type, item: item, isNew: !wasOwned };
             } else if (type === 'background') {
                 if (!unlockedBackgrounds.includes(item.id)) {
                     unlockedBackgrounds.push(item.id);
                 }
                 saveGameData();
+                checkTitleUnlocks(); // 称号チェック
                 return { type: type, item: item, isNew: !wasOwned };
             } else if (type === 'decor') {
                 if (!ownedDecor[item.emoji]) {
@@ -10567,42 +10585,70 @@ generateBackgroundEffect(currentBackground);
             
             // シリアルコードをチェック
             let reward = null;
+            let starsGained = 0;
+            let diamondsGained = 0;
+            let unlockTitles = false; // 称号解放フラグ
             
-            if (code === 'otofu1022') {
-                // 星30個、ダイヤ3個を追加
-                collectedStars = Math.min(collectedStars + 30, maxStars);
-                collectedDiamonds = Math.min(collectedDiamonds + 3, maxDiamonds);
+            if (code === 'title1') {
+                // ダイヤモンド、一等星、魔王の称号を解放（星とダイヤは増やさない）
+                unlockTitles = true;
+                
+                // 称号条件を満たすようにProgressを設定（実際の所持数は増やさない）
+                if (titleProgress.totalStars < 5000) titleProgress.totalStars = 5000;
+                if (titleProgress.totalDiamonds < 300) titleProgress.totalDiamonds = 300;
+                
+                // キャラを15体にする（不足分を追加）
+                const allChars = ['🌚', '🐵', '🤡', '🌝', '🐸', '🦭', '💩', '👁️', '🦧', '🥺', '👹', '👽', '🐲', '🌞', '😎'];
+                allChars.forEach(char => {
+                    if (!unlockedCharacters.includes(char) && unlockedCharacters.length < 15) {
+                        unlockedCharacters.push(char);
+                    }
+                });
+                
+                reward = '🏆 称号「ダイヤモンド」「一等星」「魔王」を解放しました！';
+            } else if (code === 'otofu1022') {
+                starsGained = 30;
+                diamondsGained = 3;
                 reward = '✨ 星×30、💎×3 を獲得しました！';
             } else if (code === 'update2') {
-                // 星100個、ダイヤ10個を追加
-                collectedStars = Math.min(collectedStars + 100, maxStars);
-                collectedDiamonds = Math.min(collectedDiamonds + 10, maxDiamonds);
+                starsGained = 100;
+                diamondsGained = 10;
                 reward = '✨ 星×100、💎×10 を獲得しました！';
             } else if (code === 'otofu123') {
-                // 星500個、ダイヤ50個を追加
-                collectedStars = Math.min(collectedStars + 500, maxStars);
-                collectedDiamonds = Math.min(collectedDiamonds + 50, maxDiamonds);
+                starsGained = 500;
+                diamondsGained = 50;
                 reward = '✨ 星×500、💎×50 を獲得しました！';
             } else if (code === 'thanks5') {
-                // 星50個、ダイヤ5個を追加
-                collectedStars = Math.min(collectedStars + 50, maxStars);
-                collectedDiamonds = Math.min(collectedDiamonds + 5, maxDiamonds);
+                starsGained = 50;
+                diamondsGained = 5;
                 reward = '✨ 星×50、💎×5 を獲得しました！';
             } else if (code === 'diamond5') {
-                // ダイヤ5個を追加
-                collectedDiamonds = Math.min(collectedDiamonds + 5, maxDiamonds);
+                diamondsGained = 5;
                 reward = '💎 ダイヤ×5 を獲得しました！';
             } else if (code === 'star30') {
-                // 星30個を追加
-                collectedStars = Math.min(collectedStars + 30, maxStars);
+                starsGained = 30;
                 reward = '⭐️ 星×30 を獲得しました！';
             } else if (code === 'star50') {
-                // 星50個を追加
-                collectedStars = Math.min(collectedStars + 50, maxStars);
+                starsGained = 50;
                 reward = '⭐️ 星×50 を獲得しました！';
             }
             
             if (reward) {
+                // 報酬を付与
+                collectedStars = Math.min(collectedStars + starsGained, maxStars);
+                collectedDiamonds = Math.min(collectedDiamonds + diamondsGained, maxDiamonds);
+                
+                // 合計にも加算
+                titleProgress.totalStars += starsGained;
+                titleProgress.totalDiamonds += diamondsGained;
+                
+                // title1の場合は称号を直接解放
+                if (unlockTitles) {
+                    if (!unlockedTitles.includes('diamond')) unlockedTitles.push('diamond');
+                    if (!unlockedTitles.includes('star')) unlockedTitles.push('star');
+                    if (!unlockedTitles.includes('demonlord')) unlockedTitles.push('demonlord');
+                }
+                
                 // 使用済みコードに追加
                 usedSerialCodes.push(code);
                 safeStorage.setItem('usedSerialCodes', JSON.stringify(usedSerialCodes));
@@ -10611,6 +10657,7 @@ generateBackgroundEffect(currentBackground);
                 updateStarCounter();
                 updateDiamondCounter();
                 saveGameData();
+                checkTitleUnlocks(); // 称号チェック
                 
                 serialMessage.textContent = reward;
                 serialMessage.className = 'success';
